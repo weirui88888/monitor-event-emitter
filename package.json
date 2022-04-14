@@ -23,12 +23,22 @@
   "devDependencies": {
     "@commitlint/cli": "^16.2.3",
     "@commitlint/config-conventional": "^16.2.1",
+    "@typescript-eslint/eslint-plugin": "^5.19.0",
+    "@typescript-eslint/parser": "^5.19.0",
+    "eslint": "^8.13.0",
     "husky": "^7.0.4",
+    "lint-staged": "^12.3.7",
     "typescript": "^4.6.3"
   },
   "husky": {
     "hooks": {
+      "pre-commit": "lint-staged",
       "commit-msg": "npx --no-install commitlint --edit $1"
     }
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "eslint lib --fix --ext .ts"
+    ]
   }
 }
