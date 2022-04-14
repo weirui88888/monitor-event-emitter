@@ -10,7 +10,7 @@
   "scripts": {
     "build:watch": "tsc -w",
     "build": "tsc",
-    "test": "jest --config jest.config.js",
+    "test": "jest --coverage --config jest.config.js",
     "prepare": "husky install"
   },
   "repository": {

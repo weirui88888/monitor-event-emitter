@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { isNumber, isString, isBoolean, isFunction, isArray, isObject } from "../src/util"
+import { isNumber, isString, isBoolean, isFunction, isArray, isObject, isSymbol } from "../src/util"
 import { expect, test } from "@jest/globals"
 
 test("isNumber", () => {
@@ -36,4 +36,11 @@ test("isObject", () => {
   expect(isObject(2)).toBe(false)
   expect(isObject(() => {})).toBe(false)
   expect(isObject({ name: "Carl" })).toBe(true)
+})
+
+test("isSymbol", () => {
+  expect(isSymbol("Carl")).toBe(false)
+  expect(isSymbol(2)).toBe(false)
+  expect(isSymbol(() => {})).toBe(false)
+  expect(isSymbol(Symbol())).toBe(true)
 })

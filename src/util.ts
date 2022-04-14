@@ -6,5 +6,5 @@ const isBoolean = (origin: any) => checkType(origin) === "Boolean"
 const isFunction = (origin: any) => checkType(origin) === "Function"
 const isArray = (origin: any) => checkType(origin) === "Array"
 const isObject = (origin: any) => checkType(origin) === "Object"
-
-export { isNumber, isString, isBoolean, isFunction, isArray, isObject }
+const isSymbol = (origin: any) => checkType(origin) === "Symbol"
+export { isNumber, isString, isBoolean, isFunction, isArray, isObject, isSymbol }
