@@ -1,0 +1,27 @@
+{
+  "name": "pretty-event-emitter",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build:watch": "tsc -w",
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/weirui88888/pretty-event-emitter.git"
+  },
+  "keywords": [
+    "event",
+    "emitter",
+    "typescript"
+  ],
+  "author": "ruiwei88888@163.com",
+  "license": "ISC",
+  "devDependencies": {
+    "@commitlint/cli": "^16.2.3",
+    "@commitlint/config-conventional": "^16.2.1",
+    "typescript": "^4.6.3"
+  }
+}
