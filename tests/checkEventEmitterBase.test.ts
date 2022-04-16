@@ -40,8 +40,6 @@ test("emitter registers event with single way", () => {
     console.log("this is download handler")
   })
 
-  console.log(emitter.events)
-
   expect(emitter.events.size).toBe(1)
 
   const firstPayHandler = () => {
@@ -54,7 +52,6 @@ test("emitter registers event with single way", () => {
 
   emitter.on("pay", firstPayHandler)
   emitter.on("pay", secondPayHandler, 0)
-  console.log(emitter.events.get("pay"))
   expect(emitter.events.size).toBe(2)
 })
 
@@ -85,6 +82,5 @@ test("emitter registers event with object way", () => {
       handler: handle5
     }
   })
-  console.log(emitter.events)
   expect(emitter.events.size).toBe(2)
 })

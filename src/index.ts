@@ -34,9 +34,11 @@ class EventEmitter {
    * @memberof EventEmitter
    */
   get countOfHandlers() {
-    return Object.keys(this.events).reduce((acc, symbol) => {
-      return (acc += this.events.get(symbol)?.length as number)
-    }, 0)
+    let count = 0
+    for (const handlers of this.events.values()) {
+      count += handlers.length
+    }
+    return count
   }
 
   on(event: string | IListeners, handler?: IHandler, order?: number) {
@@ -145,8 +147,8 @@ class EventEmitter {
       return this
     }
     let typeHandlers: IHandler[] = []
-    for (const events of this.events.values()) {
-      const typeHandler = events.filter((event) => event.type === "type").map((symbol) => symbol.handler)
+    for (const handlers of this.events.values()) {
+      const typeHandler = handlers.filter((event) => event.type === type).map((symbol) => symbol.handler)
       typeHandlers = [...typeHandlers, ...typeHandler]
     }
     for (const handler of typeHandlers) {
