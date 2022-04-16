@@ -1,4 +1,4 @@
-import { IConfig, IEvent, IHandler, IEventValue, IListeners } from "../typings"
+import { IConfig, IHandler, IEventValue, IListeners } from "../typings"
 import { isFunction, isNumber, isObject, isString } from "./util"
 const defaultEventScope = "EventEmitter"
 
@@ -39,20 +39,20 @@ class EventEmitter {
     }, 0)
   }
 
-  on(eventName: string | IEvent, handler?: IHandler, order?: number) {
-    if (!(isString(eventName) || isObject(eventName))) {
+  on(event: string | IListeners, handler?: IHandler, order?: number) {
+    if (!(isString(event) || isObject(event))) {
       console.log("请输入正确的事件标识符")
       return this
     }
-    if (isString(eventName)) {
+    if (isString(event)) {
       if (!isFunction(handler)) {
         console.log("请输入正确的事件处理器")
         return this
       }
-      return this._registerListener(eventName as string, handler as IHandler, order)
+      return this._registerListener(event as string, handler as IHandler, order)
     }
-    if (isObject(eventName)) {
-      return this._registerListeners(eventName as IEvent)
+    if (isObject(event)) {
+      return this._registerListeners(event as IListeners)
     }
 
     return this
@@ -61,29 +61,29 @@ class EventEmitter {
   protected _registerEvent(identifier: string, handler: IHandler, order?: number) {
     const { events } = this
     const hasOrder = isNumber(order) && (order as number) >= 0
-    const [eventName, type = ""] = identifier.split(".")
+    const [event, type = ""] = identifier.split(".")
     if (!isFunction(handler)) {
       return this
     }
 
-    if (!events.has(eventName)) {
-      events.set(eventName, [])
+    if (!events.has(event)) {
+      events.set(event, [])
     }
 
     if (hasOrder) {
-      const handlers = events.get(eventName) as IEventValue[]
+      const handlers = events.get(event) as IEventValue[]
       handlers?.splice(order as number, 0, {
         type,
         handler
       })
-      events.set(eventName, handlers)
+      events.set(event, handlers)
     } else {
-      const handlers = events.get(eventName) as IEventValue[]
+      const handlers = events.get(event) as IEventValue[]
       handlers.push({
         type,
         handler
       })
-      events.set(eventName, handlers)
+      events.set(event, handlers)
     }
     return this
   }
@@ -106,6 +106,68 @@ class EventEmitter {
       })
     })
     return this
+  }
+
+  /**
+   * @description 触发注册的事件
+   * @param {string} event 支持pay || pay.sticker  || pay.sticker download.font
+   * @example emit('pay') 将会触发事件名为pay的所有事件处理器
+   * @example emit('download.font') 将仅会触发事件名为download且事件类型为font的事件处理器
+   * @example emit('pay download.font') 将会触发事件名为pay的所有事件处理器以及事件名为download且事件类型为font的事件处理器
+   * @param {...any[]} args
+   * @return {*}
+   * @memberof EventEmitter
+   */
+  emit(event: string, ...args: any[]) {
+    const reg = /^[.|A-Za-z][A-Za-z.]+(\s{1}[A-Za-z.]+)*/g
+    if (!reg.test(event)) {
+      console.log("请输入正确的触发事件标识符")
+      return this
+    }
+    const events = event.split(" ")
+    for (const event of events) {
+      this._emit(event, ...args)
+    }
+    return this
+  }
+
+  /**
+   * @description 以事件类型触发注册的事件
+   * @param {string} type
+   * @example emitType('font') 将会触发所有类型为font的事件，不区分时间名称
+   * @param {...any[]} args
+   * @return {*}
+   * @memberof EventEmitter
+   */
+  emitType(type: string, ...args: any[]) {
+    if (!isString(type)) {
+      console.log("请输入字符串格式的事件类型")
+      return this
+    }
+    let typeHandlers: IHandler[] = []
+    for (const events of this.events.values()) {
+      const typeHandler = events.filter((event) => event.type === "type").map((symbol) => symbol.handler)
+      typeHandlers = [...typeHandlers, ...typeHandler]
+    }
+    for (const handler of typeHandlers) {
+      handler(...args)
+    }
+    return this
+  }
+
+  protected _emit(event: string, ...args: any[]) {
+    const [eventName, type = ""] = event.split(".")
+    const handlers = this._matchHandlers(eventName, type)
+    for (const handler of handlers) {
+      handler(...args)
+    }
+  }
+
+  protected _matchHandlers(eventName: string, type: string): IHandler[] {
+    const handlers = this.events.get(eventName) || []
+    // eslint-disable-next-line no-extra-boolean-cast
+    if (!!type) return handlers.filter((listener) => listener.type === type).map((symbol) => symbol.handler)
+    return handlers.map((symbol) => symbol.handler)
   }
 }
 

@@ -75,11 +75,11 @@ test("emitter registers event with object way", () => {
       handler: handle2
     },
     "pay.font": {
-      handler: handle3
+      handler: handle3,
+      order: 2
     },
     pay: {
-      handler: handle4,
-      order: 0
+      handler: handle4
     },
     "download.filter": {
       handler: handle5

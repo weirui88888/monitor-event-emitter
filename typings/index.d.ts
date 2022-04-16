@@ -9,9 +9,6 @@ interface IEventValue {
   handler: Handler
   [key: string]: any
 }
-interface IEvent {
-  [eventName: string]: IEventValue
-}
 interface IListeners {
   [eventName: string]: {
     handler: Handler
@@ -19,4 +16,4 @@ interface IListeners {
   }
 }
 
-export { IConfig, IEvent, IHandler, IEventValue, IListeners }
+export { IConfig, IHandler, IEventValue, IListeners }
