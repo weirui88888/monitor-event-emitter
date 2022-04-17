@@ -24,7 +24,7 @@ interface IMatchHandlers extends Pick<IEventValue, "id" | "type"> {
 interface IHandlerDetails {
   count: number
   details: {
-    res: any
+    result: any
     time: Date
     args: any[]
   }[]

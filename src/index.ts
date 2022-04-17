@@ -175,6 +175,11 @@ class EventEmitter {
       )
       return this
     }
+
+    if (!this.events.size) {
+      console.log("no events are registered in the event center")
+      return this
+    }
     const events = event.split(" ")
     for (const event of events) {
       this._emit(event, ...args)
@@ -276,20 +281,22 @@ class EventEmitter {
     let typeHandlers: IMatchHandlers[] = []
     for (const [eventName, handlers] of this.events.entries()) {
       const [typeHandler] = handlers.filter((handler) => handler.type === type) as IEventValue[]
-      const { id, type: eventType, handler } = typeHandler
-      typeHandlers = [
-        ...typeHandlers,
-        {
-          id,
-          type: eventType,
-          handler,
-          eventName
-        }
-      ]
+      if (typeHandler) {
+        const { id, type: eventType, handler } = typeHandler
+        typeHandlers = [
+          ...typeHandlers,
+          {
+            id,
+            type: eventType,
+            handler,
+            eventName
+          }
+        ]
+      }
     }
     for (const { handler, id, type, eventName } of typeHandlers) {
-      const res = handler(...args)
-      this._setWatcher(eventName, type, id, res, ...args)
+      const result = handler(...args)
+      this._setWatcher(eventName, type, id, result, ...args)
     }
 
     return this
@@ -299,8 +306,8 @@ class EventEmitter {
     const [eventName, type = ""] = event.split(".")
     const handlers = this._matchHandlers(eventName, type)
     for (const { handler, id, type, eventName } of handlers) {
-      const res = handler(...args)
-      this._setWatcher(eventName, type, id, res, ...args)
+      const result = handler(...args)
+      this._setWatcher(eventName, type, id, result, ...args)
     }
   }
 
@@ -337,7 +344,7 @@ class EventEmitter {
     })
   }
 
-  protected _setWatcher(eventName: string, type: string, id: string, res: any, ...args: any[]) {
+  protected _setWatcher(eventName: string, type: string, id: string, result: any, ...args: any[]) {
     if (!type) {
       type = "global"
     }
@@ -347,7 +354,7 @@ class EventEmitter {
         count: 1,
         details: [
           {
-            res,
+            result,
             time: new Date(),
             args
           }
@@ -358,7 +365,7 @@ class EventEmitter {
       const applyDetails = (this.eventEmitterWatcher.get(eventUuid) as IHandlerDetails).details
       this.eventEmitterWatcher.set(eventUuid, {
         count: applyCount + 1,
-        details: [...applyDetails, { res, time: new Date(), args }]
+        details: [...applyDetails, { result, time: new Date(), args }]
       })
     }
   }

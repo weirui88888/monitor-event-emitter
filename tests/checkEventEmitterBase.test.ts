@@ -120,29 +120,27 @@ test("not emit with a correct way", () => {
 
 test("emitter Watch", () => {
   const emitter = new EventEmitter()
-  const handle1 = jest.fn().mockReturnValueOnce("emitter Watch")
+  const handle1 = jest.fn().mockReturnValue("emitter Watch")
+  const handle2 = jest.fn().mockReturnValue("emitter Watch2")
   emitter.on("download.sticker", handle1)
+  emitter.on("pay.font", handle2)
   emitter.emitType("sticker", "provide")
-  emitter.emitType("sticker", "provide2")
+  emitter.emitType("font", "provide2")
+  emitter.emitType("font", "provide3")
   const watcher = emitter.watch()
-  let watcherValueOne
-  expect(watcher.size).toBe(1)
+  expect(watcher.size).toBe(2)
+  const watcherValues = [...watcher.values()]
 
-  for (const watcherValue of watcher.values()) {
-    watcherValueOne = watcherValue
-  }
+  expect(watcherValues[0].count).toBe(1)
+  expect(watcherValues[1].count).toBe(2)
 
-  // @ts-ignore
-  expect(watcherValueOne.count).toBe(2)
-  // @ts-ignore
-  expect(watcherValueOne.details[0].args[0]).toBe("provide")
-  // @ts-ignore
-  expect(watcherValueOne.details[0].res).toBe("emitter Watch")
-  // @ts-ignore
-  // expect(watcherValueOne.details[1].args[0]).toBe("provide2")
-  // @ts-ignore
-  console.log(watcherValueOne)
-  // expect(watcherValueOne.details[1].res).toBe("emitter Watch")
+  expect(watcherValues[0].details[0].args[0]).toBe("provide")
+  expect(watcherValues[1].details[0].args[0]).toBe("provide2")
+  expect(watcherValues[1].details[1].args[0]).toBe("provide3")
+
+  expect(watcherValues[0].details[0].result).toBe("emitter Watch")
+  expect(watcherValues[1].details[0].result).toBe("emitter Watch2")
+  expect(watcherValues[1].details[1].result).toBe("emitter Watch2")
 })
 
 test("type error of emitType", () => {
