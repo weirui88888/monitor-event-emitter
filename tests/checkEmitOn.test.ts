@@ -1,4 +1,3 @@
-/* tslint:disable */
 import { expect, test, jest } from "@jest/globals"
 import EventEmitter from "../src/index"
 
@@ -114,9 +113,8 @@ test("on blend mode", () => {
   expect(handle5.mock.calls.length).toBe(1)
   expect(handle6.mock.calls.length).toBe(0)
   expect(emitter.countOfEvents).toBe(2)
-  expect(emitter.countOfHandlers).toBe(6)
-
-  console.log(emitter.events)
+  expect(emitter.countOfAllHandlers).toBe(6)
+  expect([...emitter.eventKeys].length).toBe(2)
 })
 
 test("error type of event", () => {

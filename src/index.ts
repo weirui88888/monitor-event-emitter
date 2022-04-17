@@ -65,7 +65,7 @@ class EventEmitter {
     }
     const handlers = this.events.get(event)
     if (!handlers) {
-      console.log(`事件名为${event}的处理器数量为0`)
+      console.log(`The number of handlers with event name ${event} is 0`)
       return 0
     }
     return handlers.length
@@ -91,12 +91,12 @@ class EventEmitter {
 
   on(event: string | IListeners, handler?: IHandler, order?: number) {
     if (!(isString(event) || isObject(event))) {
-      console.log("请输入正确的事件标识符")
+      console.log("param event should provided with type string or object")
       return this
     }
     if (isString(event)) {
       if (!isFunction(handler)) {
-        console.log("请输入正确的事件处理器")
+        console.log("param handler should provided")
         return this
       }
       return this._registerListener(event as string, handler as IHandler, order)
@@ -104,8 +104,6 @@ class EventEmitter {
     if (isObject(event)) {
       return this._registerListeners(event as IListeners)
     }
-
-    return this
   }
 
   protected _registerEvent(identifier: string, handler: IHandler, order?: number) {
@@ -113,10 +111,7 @@ class EventEmitter {
     const hasOrder = isNumber(order) && (order as number) >= 0
     const [event, type = ""] = identifier.split(".")
     if (!event) {
-      console.log("event name should be provide")
-      return this
-    }
-    if (!isFunction(handler)) {
+      console.log("when you're ready to register an event handler, it's best to provide an event name")
       return this
     }
 
@@ -278,14 +273,25 @@ class EventEmitter {
       console.log("请输入字符串格式的事件类型")
       return this
     }
-    let typeHandlers: IHandler[] = []
-    for (const handlers of this.events.values()) {
-      const typeHandler = handlers.filter((event) => event.type === type).map((symbol) => symbol.handler)
-      typeHandlers = [...typeHandlers, ...typeHandler]
+    let typeHandlers: IMatchHandlers[] = []
+    for (const [eventName, handlers] of this.events.entries()) {
+      const [typeHandler] = handlers.filter((handler) => handler.type === type) as IEventValue[]
+      const { id, type: eventType, handler } = typeHandler
+      typeHandlers = [
+        ...typeHandlers,
+        {
+          id,
+          type: eventType,
+          handler,
+          eventName
+        }
+      ]
     }
-    for (const handler of typeHandlers) {
-      handler(...args)
+    for (const { handler, id, type, eventName } of typeHandlers) {
+      const res = handler(...args)
+      this._setWatcher(eventName, type, id, res, ...args)
     }
+
     return this
   }
 
