@@ -1,4 +1,4 @@
-import { IConfig, IHandler, IEventValue, IListeners } from "../typings"
+import { IConfig, IHandler, IEventValue, IListeners, IMatchHandlers, IHandlerDetails } from "../typings"
 import { isFunction, isNumber, isObject, isString } from "./util"
 const defaultEventScope = "EventEmitter"
 
@@ -10,13 +10,24 @@ class EventEmitter {
   public maxEvents: number | null
   public scope: string
   public events: Map<string, IEventValue[]>
-  public debug: boolean
+  public eventEmitterWatcher: Map<string, IHandlerDetails>
+  protected debug: boolean
   static version = "v0.0.1"
   constructor(config?: IConfig) {
     this.maxEvents = config?.maxEvents ? config.maxEvents : null
     this.scope = config?.scope || defaultEventScope
     this.debug = config?.debug || false
     this.events = new Map()
+    this.eventEmitterWatcher = new Map()
+  }
+
+  /**
+   * @description 获取当前已注册的事件
+   * @readonly
+   * @memberof EventEmitter
+   */
+  get eventKeys() {
+    return this.events.keys()
   }
 
   /**
@@ -33,12 +44,49 @@ class EventEmitter {
    * @readonly
    * @memberof EventEmitter
    */
-  get countOfHandlers() {
+  get countOfAllHandlers() {
     let count = 0
     for (const handlers of this.events.values()) {
       count += handlers.length
     }
     return count
+  }
+
+  /**
+   * @description 获取事件名为event的处理器数量
+   * @param {string} event
+   * @returns {*}
+   * @memberof EventEmitter
+   */
+  countOfEventHandlers(event: string) {
+    if (!isString(event)) {
+      console.log("param event show be string")
+      return 0
+    }
+    const handlers = this.events.get(event)
+    if (!handlers) {
+      console.log(`事件名为${event}的处理器数量为0`)
+      return 0
+    }
+    return handlers.length
+  }
+
+  /**
+   * @description 获取类型为type的处理器数量
+   * @param {string} type
+   * @returns {*}
+   * @memberof EventEmitter
+   */
+  countOfTypeHandlers(type: string) {
+    if (!isString(type)) {
+      console.log("param type should be string")
+      return 0
+    }
+    let allHandlers: IEventValue[] = []
+    for (const eventHandlers of this.events.values()) {
+      allHandlers = [...allHandlers, ...eventHandlers]
+    }
+    return allHandlers.filter((symbol) => symbol.type === type).length
   }
 
   on(event: string | IListeners, handler?: IHandler, order?: number) {
@@ -64,6 +112,10 @@ class EventEmitter {
     const { events } = this
     const hasOrder = isNumber(order) && (order as number) >= 0
     const [event, type = ""] = identifier.split(".")
+    if (!event) {
+      console.log("event name should be provide")
+      return this
+    }
     if (!isFunction(handler)) {
       return this
     }
@@ -74,18 +126,18 @@ class EventEmitter {
 
     if (hasOrder) {
       const handlers = events.get(event) as IEventValue[]
-      handlers?.splice(order as number, 0, {
+      handlers.splice(order as number, 0, {
         type,
-        handler
+        handler,
+        id: this._uuid()
       })
-      events.set(event, handlers)
     } else {
       const handlers = events.get(event) as IEventValue[]
       handlers.push({
         type,
-        handler
+        handler,
+        id: this._uuid()
       })
-      events.set(event, handlers)
     }
     return this
   }
@@ -121,9 +173,11 @@ class EventEmitter {
    * @memberof EventEmitter
    */
   emit(event: string, ...args: any[]) {
-    const reg = /^[.|A-Za-z][A-Za-z.]+(\s{1}[A-Za-z.]+)*/g
+    const reg = /^[A-Za-z][A-Za-z.]+(\s{1}[A-Za-z.]+)*/g
     if (!reg.test(event)) {
-      console.log("请输入正确的触发事件标识符")
+      console.log(
+        "param event show be string,such as 'download.pic' or 'download.pic pay' or 'download.pic pay.privilege'"
+      )
       return this
     }
     const events = event.split(" ")
@@ -131,6 +185,84 @@ class EventEmitter {
       this._emit(event, ...args)
     }
     return this
+  }
+
+  /**
+   * @description 清除所有的事件处理器
+   * @returns {*}
+   * @memberof EventEmitter
+   */
+  offAll() {
+    return this.events.clear()
+  }
+
+  /**
+   * @description 清除事件处理器
+   * @param {string} event
+   * @returns {*}
+   * @memberof EventEmitter
+   */
+  off(event: string) {
+    const reg = /^[A-Za-z][A-Za-z.]+(\s{1}[A-Za-z.]+)*/g
+    if (!reg.test(event)) {
+      console.log(
+        "param event show be string,such as 'download.pic' or 'download.pic pay' or 'download.pic pay.privilege'"
+      )
+      return this
+    }
+    const events = event.split(" ")
+    for (const event of events) {
+      const [eventName, type = ""] = event.split(".")
+      this._off(eventName, type)
+    }
+    return this
+  }
+
+  protected _off(eventName: string, type: string) {
+    if (eventName && type) {
+      const handlers = this.events.get(eventName) || []
+      const handlerOfTypeIndex = handlers.findIndex((handler) => handler.type === type)
+      if (handlerOfTypeIndex >= 0) {
+        handlers.splice(handlerOfTypeIndex, 1)
+      }
+    } else {
+      if (this.events.has(eventName)) {
+        this.events.delete(eventName)
+      }
+    }
+    this._deleteInvalidEvent()
+    return this
+  }
+
+  /**
+   * @description 删除类型为type的事件处理器
+   * @param {string} type
+   * @returns {*}
+   * @memberof EventEmitter
+   */
+  offType(type: string) {
+    if (!isString(type)) {
+      console.log("param type should be string")
+      return this
+    }
+    for (const key of this.eventKeys) {
+      const handlers = this.events.get(key) || []
+      const handlerOfTypeIndex = handlers.findIndex((handler) => handler.type === type)
+      if (handlerOfTypeIndex >= 0) {
+        handlers.splice(handlerOfTypeIndex, 1)
+      }
+    }
+    this._deleteInvalidEvent()
+    return this
+  }
+
+  protected _deleteInvalidEvent() {
+    for (const key of this.eventKeys) {
+      const handlers = this.events.get(key) || []
+      if (handlers.length === 0) {
+        this.events.delete(key)
+      }
+    }
   }
 
   /**
@@ -160,16 +292,73 @@ class EventEmitter {
   protected _emit(event: string, ...args: any[]) {
     const [eventName, type = ""] = event.split(".")
     const handlers = this._matchHandlers(eventName, type)
-    for (const handler of handlers) {
-      handler(...args)
+    for (const { handler, id, type, eventName } of handlers) {
+      const res = handler(...args)
+      this._setWatcher(eventName, type, id, res, ...args)
     }
   }
 
-  protected _matchHandlers(eventName: string, type: string): IHandler[] {
+  protected _matchHandlers(eventName: string, type: string): IMatchHandlers[] {
     const handlers = this.events.get(eventName) || []
-    // eslint-disable-next-line no-extra-boolean-cast
-    if (!!type) return handlers.filter((listener) => listener.type === type).map((symbol) => symbol.handler)
-    return handlers.map((symbol) => symbol.handler)
+    if (type)
+      return handlers
+        .filter((listener) => listener.type === type)
+        .map((symbol) => {
+          const { handler, id, type } = symbol
+          return {
+            handler,
+            id,
+            type,
+            eventName
+          }
+        })
+    return handlers.map((symbol) => {
+      const { handler, id, type } = symbol
+      return {
+        handler,
+        id,
+        type,
+        eventName
+      }
+    })
+  }
+
+  protected _uuid() {
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+      const r = (Math.random() * 16) | 0,
+        v = c == "x" ? r : (r & 0x3) | 0x8
+      return v.toString(16)
+    })
+  }
+
+  protected _setWatcher(eventName: string, type: string, id: string, res: any, ...args: any[]) {
+    if (!type) {
+      type = "global"
+    }
+    const eventUuid = `${eventName}-${type}-${id}`
+    if (!this.eventEmitterWatcher.has(eventUuid)) {
+      this.eventEmitterWatcher.set(eventUuid, {
+        count: 1,
+        details: [
+          {
+            res,
+            time: new Date(),
+            args
+          }
+        ]
+      })
+    } else {
+      const applyCount = (this.eventEmitterWatcher.get(eventUuid) as IHandlerDetails).count
+      const applyDetails = (this.eventEmitterWatcher.get(eventUuid) as IHandlerDetails).details
+      this.eventEmitterWatcher.set(eventUuid, {
+        count: applyCount + 1,
+        details: [...applyDetails, { res, time: new Date(), args }]
+      })
+    }
+  }
+
+  watch() {
+    return this.eventEmitterWatcher
   }
 }
 

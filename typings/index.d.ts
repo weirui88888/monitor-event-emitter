@@ -5,15 +5,29 @@ interface IConfig {
   debug?: boolean
 }
 interface IEventValue {
-  type?: string
-  handler: Handler
-  [key: string]: any
+  type: string
+  handler: IHandler
+  id: string
 }
 interface IListeners {
   [eventName: string]: {
-    handler: Handler
+    handler: IHandler
     order?: number
   }
 }
 
-export { IConfig, IHandler, IEventValue, IListeners }
+interface IMatchHandlers extends Pick<IEventValue, "id" | "type"> {
+  handler: IHandler
+  eventName: string
+}
+
+interface IHandlerDetails {
+  count: number
+  details: {
+    res: any
+    time: Date
+    args: any[]
+  }[]
+}
+
+export { IConfig, IHandler, IEventValue, IListeners, IMatchHandlers, IHandlerDetails }
