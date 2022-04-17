@@ -1,5 +1,5 @@
 import { IConfig, IHandler, IEventValue, IListeners, IMatchHandlers, IHandlerDetails } from "../typings"
-import { isFunction, isNumber, isObject, isString } from "./util"
+import { isFunction, isAsyncFunction, isNumber, isObject, isString } from "./util"
 const defaultEventScope = "EventEmitter"
 
 /**
@@ -95,7 +95,7 @@ class EventEmitter {
       return this
     }
     if (isString(event)) {
-      if (!isFunction(handler)) {
+      if (!(isFunction(handler) || isAsyncFunction(handler))) {
         console.log("param handler should provided")
         return this
       }

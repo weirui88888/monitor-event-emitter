@@ -4,7 +4,7 @@ const isNumber = (origin: any) => checkType(origin) === "Number"
 const isString = (origin: any) => checkType(origin) === "String"
 const isBoolean = (origin: any) => checkType(origin) === "Boolean"
 const isFunction = (origin: any) => checkType(origin) === "Function"
+const isAsyncFunction = (origin: any) => checkType(origin) === "AsyncFunction"
 const isArray = (origin: any) => checkType(origin) === "Array"
 const isObject = (origin: any) => checkType(origin) === "Object"
-const isSymbol = (origin: any) => checkType(origin) === "Symbol"
-export { isNumber, isString, isBoolean, isFunction, isArray, isObject, isSymbol }
+export { isNumber, isString, isBoolean, isFunction, isAsyncFunction, isArray, isObject }
