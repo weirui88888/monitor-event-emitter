@@ -6,7 +6,7 @@ By using it, you can easily register and trigger events. At the same time, you c
 
 ## Install
 
-A lightweight event monitoring processor.
+A lightweight event monitoring processor. Support `cmj`、`esm`、`umd`module.
 
 ```javascript
 npm i -S pretty-event-emitter
@@ -14,10 +14,13 @@ npm i -S pretty-event-emitter
 
 ## Usage
 
-This is just the most basic way to use it. For more usage, please refer to
+This is just the most basic way to use it. For more usage, please refer to [Support Api](#support-api)
 
 ```javascript
+// esm
 import EventEmitter from "pretty-event-emitter"
+// or cmj
+const EventEmitter = require("pretty-event-emitter")
 
 const eventsBus = new EventEmitter()
 

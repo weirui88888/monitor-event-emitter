@@ -1,7 +1,7 @@
 {
   "name": "pretty-event-emitter",
   "version": "1.0.0",
-  "description": "",
+  "description": "A lightweight event monitoring processor",
   "main": "lib/bundle.cjs.js",
   "module": "lib/bundle.esm.js",
   "browser": "lib/bundle.browser.js",
@@ -24,7 +24,8 @@
   "keywords": [
     "event",
     "emitter",
-    "typescript"
+    "typescript",
+    "watcher"
   ],
   "author": "ruiwei88888@163.com",
   "license": "ISC",
