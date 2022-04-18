@@ -1,5 +1,7 @@
 # EventEmitter ![language-typescript](https://img.shields.io/badge/typescript-blue?style=flat&logo=typescript&logoColor=white) [![codecov](https://codecov.io/gh/weirui88888/pretty-event-emitter/branch/master/graph/badge.svg?token=T9PAH7EJN1)](https://codecov.io/gh/weirui88888/pretty-event-emitter)
 
+[中文文档](./README-ZH.md)
+
 ## Why
 
 By using it, you can easily register and trigger events. At the same time, you can observe the snapshot information of the event handler execution in the console in real time.
@@ -9,7 +11,7 @@ Also,You can extend your business module with this base class, such as:
 ```javascript
 import EventEmitter from "pretty-event-emitter"
 
-class YourClass extends EventEmitter {
+class derivedClass extends EventEmitter {
   constructor(config) {
     super(config)
   }
@@ -56,9 +58,9 @@ Register for one or more events at the same time
 - `example`
 
 ```javascript
-eventsBus.on("download", (...args:[]) => {...do some thing as you like with args}) // only register a single handler with eventName download
-eventsBus.on("download.image", (...args:[]) => {...do some thing as you like with args}) // register a single handler with eventName download and type pic
-eventsBus.on("download pay.membership", () => {...do some thing as you like with args}) // at the same time register a single handler with eventName download, and eventName pay with type membership
+eventsBus.on("download", (...args:[]) => {...}) // only register a single handler with eventName download
+eventsBus.on("download.image", (...args:[]) => {...}) // register a single handler with eventName download and type image
+eventsBus.on("download pay.membership", (...args:[]) => {...}) // at the same time register a single handler with eventName download, and eventName pay with type membership
 ```
 
 - `attention`
@@ -73,8 +75,8 @@ Trigger event handler, support event name (`batch`) or event name with type (`ex
 - `example`
 
 ```javascript
-eventsBus.on('download.privilege download.image',(status)=>{
-  // The processor function here indicates what should be done according to the status after downloading the privilege or image
+eventsBus.on('download.privilege download.image',(status,type)=>{
+  // The processor function here indicates what should be done according to the status and type after downloading the privilege or image
 })
 
 // After registering, you will find your event hub looks like this
@@ -221,6 +223,13 @@ eventsBus.on("download.privilege pay.privilege download.font", (status, type) =>
 
 eventsBus.countOfAllHandlers // 3
 ```
+
+## TODO
+
+- [ ] Real-time log printing can be supported by enabling debug mode (currently, only viewing and executing snapshots by calling `eventsBus.watch()` is supported)
+- [ ] Add maximum number of event handlers
+- [ ] Beautify console log information
+- [ ] Support log simple mode（At present, the data type in it is implemented by map, which is very convenient to write, but may not be very comfortable to read）
 
 ## Contributing
 
