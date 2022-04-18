@@ -4,6 +4,20 @@
 
 By using it, you can easily register and trigger events. At the same time, you can observe the snapshot information of the event handler execution in the console in real time.
 
+Also,You can extend your business module with this base class, such as:
+
+```javascript
+import EventEmitter from "pretty-event-emitter"
+
+class YourClass extends EventEmitter {
+  constructor(config) {
+    super(config)
+  }
+  ...your code
+}
+
+```
+
 ## Install
 
 A lightweight event monitoring processor. Support `cmj`、`esm`、`umd`module.
@@ -52,7 +66,7 @@ eventsBus.on("download pay.membership", () => {...do some thing as you like with
   - Although multiple events are registered, they all have the same event handler
   - **An event may correspond to multiple different types of event handlers**
 
-### `eventBus.emit(event,...args)`
+### `eventsBus.emit(event,...args)`
 
 Trigger event handler, support event name (`batch`) or event name with type (`exact`)
 
@@ -65,7 +79,7 @@ eventsBus.on('download.privilege download.image',(status)=>{
 
 // After registering, you will find your event hub looks like this
 
-// eventBus.events
+// eventsBus.events
 {
   download:[{type:'privilege',handler:(status)=>{...},{type:'image',(status)=>{...}}}]
 }
@@ -78,7 +92,7 @@ eventsBus.emit('download.privilege') // only download.privilege will be trigger
 
 ```
 
-### `eventBus.emitType(type)`
+### `eventsBus.emitType(type)`
 
 Trigger handlers by event type
 
@@ -91,7 +105,7 @@ eventsBus.on('download.privilege pay.privilege',(status,type)=>{
 
 // After registering, you will find your event hub looks like this
 
-// eventBus.events
+// eventsBus.events
 {
   download:[{type:'privilege',handler:(status,type)=>{...}}],
   pay:[{type:'privilege',handler:(status,type)=>{...}}],
@@ -101,7 +115,18 @@ eventsBus.on('download.privilege pay.privilege',(status,type)=>{
 eventsBus.emitType('privilege',true,'font') // both of download.privilege and pay.privilege handler will be trigger
 ```
 
-### `eventBus.off(event)`
+### `eventsBus.watch()`
+
+:heart_eyes_cat: In order to be able to easily know the execution of the event handler. Provides a watch method that returns the order of execution of all events, parameters and return values, and call time.
+
+So if you get some doubts when using it, you can try calling it.
+
+```javascript
+const watcher = eventsBus.watch()
+console.log(watcher)
+```
+
+### `eventsBus.off(event)`
 
 Destroy event handler, support event name (`batch`) or event name with type (`exact`)
 
@@ -115,7 +140,7 @@ eventsBus.off('download') // all handlers with eventName download will be destro
 eventsBus.off('download.privilege') // handler with eventName download and type privilege will be destroyed
 ```
 
-### `eventBus.offType(type)`
+### `eventsBus.offType(type)`
 
 Destroy event handlers of a certain type
 
@@ -125,7 +150,7 @@ Destroy event handlers of a certain type
 eventsBus.offType("privilege")
 ```
 
-### `eventBus.offAll()`
+### `eventsBus.offAll()`
 
 Destroy all registered events and event handlers
 
@@ -135,15 +160,66 @@ Destroy all registered events and event handlers
 eventsBus.offAll()
 ```
 
-### `eventBus.watch()`
+### `eventsBus.countOfEventHandlers(event)`
 
-:heart_eyes_cat: In order to be able to easily know the execution of the event handler. Provides a watch method that returns the order of execution of all events, parameters and return values, and call time.
-
-So if you get some doubts when using it, you can try calling it.
+Returns the number of handler functions for the given event
 
 ```javascript
-const watcher = eventsBus.watch()
-console.log(watcher)
+eventsBus.on("download.privilege pay.privilege download.font", (status, type) => {
+  // do something with args.status and args.type
+})
+
+eventsBus.countOfEventHandlers("download") // 2
+eventsBus.countOfEventHandlers("pay") // 1
+```
+
+### `eventsBus.countOfTypeHandlers(type)`
+
+Returns the number of handler functions for the given type
+
+```javascript
+eventsBus.on("download.privilege pay.privilege download.font delete.privilege", (status, type) => {
+  // do something with args.status and args.type
+})
+
+eventsBus.countOfTypeHandlers("privilege") // 3
+eventsBus.countOfTypeHandlers("font") // 1
+```
+
+### `eventsBus.eventKeys`
+
+Returns the name of the event when it has been registered
+
+```javascript
+eventsBus.on("download.privilege pay.privilege", (status, type) => {
+  // do something with args.status and args.type
+})
+
+eventsBus.eventKeys // ['download','pay']
+```
+
+### `eventsBus.countOfEvents`
+
+Returns the name of the event when it has been registered
+
+```javascript
+eventsBus.on("download.privilege pay.privilege", (status, type) => {
+  // do something with args.status and args.type
+})
+
+eventsBus.countOfEvents // 2
+```
+
+### `eventsBus.countOfAllHandlers`
+
+Returns the number of all event handlers that have registered for the event
+
+```javascript
+eventsBus.on("download.privilege pay.privilege download.font", (status, type) => {
+  // do something with args.status and args.type
+})
+
+eventsBus.countOfAllHandlers // 3
 ```
 
 ## Contributing
