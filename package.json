@@ -12,6 +12,7 @@
     "lib"
   ],
   "scripts": {
+    "build:watch": "rollup -c -w",
     "build": "rollup -c",
     "build:type": "tsc",
     "test": "jest --coverage --config jest.config.js",

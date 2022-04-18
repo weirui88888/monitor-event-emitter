@@ -1,4 +1,4 @@
-import { IConfig, IHandler, IEventValue, IListeners, IMatchHandlers, IHandlerDetails } from "./type"
+import { IConfig, IHandler, IEventValue, IListeners, IMatchHandlers, IHandlerDetails, SuggestionTips } from "./type"
 import { isFunction, isAsyncFunction, isNumber, isObject, isString } from "./util"
 const defaultEventScope = "EventEmitter"
 
@@ -60,12 +60,12 @@ class EventEmitter {
    */
   countOfEventHandlers(event: string) {
     if (!isString(event)) {
-      console.log("param event show be string")
+      console.log(SuggestionTips.TYPE_TYPE_WARN)
       return 0
     }
     const handlers = this.events.get(event)
     if (!handlers) {
-      console.log(`The number of handlers with event name ${event} is 0`)
+      console.log(`${SuggestionTips.NO_EVENT_HANDLER_TIP} ${event} is 0`)
       return 0
     }
     return handlers.length
@@ -79,7 +79,7 @@ class EventEmitter {
    */
   countOfTypeHandlers(type: string) {
     if (!isString(type)) {
-      console.log("param type should be string")
+      console.log(SuggestionTips.TYPE_TYPE_WARN)
       return 0
     }
     let allHandlers: IEventValue[] = []
@@ -91,12 +91,12 @@ class EventEmitter {
 
   on(event: string | IListeners, handler?: IHandler, order?: number) {
     if (!(isString(event) || isObject(event))) {
-      console.log("param event should provided with type string or object")
+      console.log(SuggestionTips.ON_METHOD_EVENT_TYPE_WARN)
       return this
     }
     if (isString(event)) {
       if (!(isFunction(handler) || isAsyncFunction(handler))) {
-        console.log("param handler should provided")
+        console.log(SuggestionTips.HANDLER_TYPE_WARN)
         return this
       }
       return this._registerListener(event as string, handler as IHandler, order)
@@ -111,7 +111,7 @@ class EventEmitter {
     const hasOrder = isNumber(order) && (order as number) >= 0
     const [event, type = ""] = identifier.split(".")
     if (!event) {
-      console.log("when you're ready to register an event handler, it's best to provide an event name")
+      console.log(SuggestionTips.EVENT_WITH_TYPE_ONLY_TIP)
       return this
     }
 
@@ -170,14 +170,12 @@ class EventEmitter {
   emit(event: string, ...args: any[]) {
     const reg = /^[A-Za-z][A-Za-z.]+(\s{1}[A-Za-z.]+)*/g
     if (!reg.test(event)) {
-      console.log(
-        "param event show be string,such as 'download.pic' or 'download.pic pay' or 'download.pic pay.privilege'"
-      )
+      console.log(SuggestionTips.EMIT_METHOD_EVENT_TYPE_WARN)
       return this
     }
 
     if (!this.events.size) {
-      console.log("no events are registered in the event center")
+      console.log(SuggestionTips.NO_EVENT_TIP)
       return this
     }
     const events = event.split(" ")
@@ -205,9 +203,7 @@ class EventEmitter {
   off(event: string) {
     const reg = /^[A-Za-z][A-Za-z.]+(\s{1}[A-Za-z.]+)*/g
     if (!reg.test(event)) {
-      console.log(
-        "param event show be string,such as 'download.pic' or 'download.pic pay' or 'download.pic pay.privilege'"
-      )
+      console.log(SuggestionTips.OFF_METHOD_EVENT_TYPE_WARN)
       return this
     }
     const events = event.split(" ")
@@ -242,7 +238,7 @@ class EventEmitter {
    */
   offType(type: string) {
     if (!isString(type)) {
-      console.log("param type should be string")
+      console.log(SuggestionTips.OFFTYPE_METHOD_TYPE_WARN)
       return this
     }
     for (const key of this.eventKeys) {
@@ -275,7 +271,7 @@ class EventEmitter {
    */
   emitType(type: string, ...args: any[]) {
     if (!isString(type)) {
-      console.log("请输入字符串格式的事件类型")
+      console.log(SuggestionTips.TYPE_TYPE_WARN)
       return this
     }
     let typeHandlers: IMatchHandlers[] = []
