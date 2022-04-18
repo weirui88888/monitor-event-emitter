@@ -2,15 +2,18 @@
   "name": "pretty-event-emitter",
   "version": "1.0.0",
   "description": "",
-  "main": "./lib/index.js",
-  "types": "./lib/index.d.ts",
+  "main": "lib/bundle.cjs.js",
+  "module": "lib/bundle.esm.js",
+  "browser": "lib/bundle.browser.js",
+  "types": "types/index.d.ts",
   "files": [
-    "lib/**/*",
-    "typings/*"
+    "src",
+    "types",
+    "lib"
   ],
   "scripts": {
-    "build:watch": "tsc -w",
-    "build": "tsc",
+    "build": "rollup -c",
+    "build:type": "tsc",
     "test": "jest --coverage --config jest.config.js",
     "prepare": "husky install"
   },
@@ -28,6 +31,8 @@
   "devDependencies": {
     "@commitlint/cli": "^16.2.3",
     "@commitlint/config-conventional": "^16.2.1",
+    "@rollup/plugin-commonjs": "^21.1.0",
+    "@rollup/plugin-typescript": "^8.3.2",
     "@types/jest": "^27.4.1",
     "@typescript-eslint/eslint-plugin": "^5.19.0",
     "@typescript-eslint/parser": "^5.19.0",
@@ -36,7 +41,11 @@
     "husky": "^7.0.4",
     "jest": "^27.5.1",
     "lint-staged": "^12.3.7",
+    "rollup": "^2.45.1",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-terser": "^7.0.2",
     "ts-jest": "^27.1.4",
+    "tslib": "^2.3.1",
     "typescript": "^4.6.3"
   },
   "husky": {

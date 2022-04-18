@@ -1,4 +1,4 @@
-import { IConfig, IHandler, IEventValue, IListeners, IMatchHandlers, IHandlerDetails } from "../typings"
+import { IConfig, IHandler, IEventValue, IListeners, IMatchHandlers, IHandlerDetails } from "./type"
 import { isFunction, isAsyncFunction, isNumber, isObject, isString } from "./util"
 const defaultEventScope = "EventEmitter"
 
