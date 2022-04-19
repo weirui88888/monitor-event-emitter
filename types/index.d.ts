@@ -1,4 +1,5 @@
-import { IConfig, IHandler, IEventValue, IListeners, IMatchHandlers, IHandlerDetails, ModeType } from "./type";
+import { IConfig, IHandler, IEventValue, IListeners, IMatchHandlers, IHandlerDetails, ModeType, HandlerType } from "./type";
+import PrettyScopeConsole from "pretty-scope-console";
 /**
  * @description 事件处理器
  * @class EventEmitter
@@ -8,6 +9,7 @@ declare class EventEmitter {
     maxHandlers: number | null;
     scope: string;
     mode: ModeType;
+    Debugger: PrettyScopeConsole;
     events: Map<string, IEventValue[]>;
     eventEmitterWatcher: Map<string, IHandlerDetails>;
     protected debug: boolean;
@@ -102,6 +104,6 @@ declare class EventEmitter {
     protected _deleteInvalidEvent(): void;
     protected _matchHandlers(eventName: string, type: string): IMatchHandlers[];
     protected _uuid(): string;
-    protected _setWatcher(eventName: string, type: string, id: string, result: any, ...args: any[]): void;
+    protected _setWatcher(handlerType: keyof typeof HandlerType, eventName: string, type: string, id: string, result: any, ...args: any[]): void;
 }
 export default EventEmitter;

@@ -5,6 +5,11 @@ declare const enum Mode {
   "cool" = "cool"
 }
 
+declare const enum HandlerType {
+  "async" = "async",
+  "sync" = "sync"
+}
+
 type ModeType = keyof typeof Mode
 
 interface IConfig {
@@ -37,6 +42,7 @@ interface IHandlerDetails {
     result: any
     time: Date
     args: any[]
+    handlerType: keyof typeof HandlerType
   }[]
 }
 
@@ -46,13 +52,24 @@ declare const enum SuggestionTips {
   NO_EVENT_HANDLER_TIP = "the number of handlers with event name",
   ON_METHOD_EVENT_TYPE_WARN = "param event should provided with type string or object",
   HANDLER_TYPE_WARN = "handler type should be provided as function",
-  EVENT_WITH_TYPE_ONLY_TIP = "when you're ready to register an event handler, it's best to provide an event name.such as download.privilege",
-  EMIT_METHOD_EVENT_TYPE_WARN = "event type show be string,such as 'download.pic' or 'download.pic pay' or 'download.pic pay.privilege'",
+  EVENT_WITH_TYPE_ONLY_TIP = "when you're ready to register an event handler, it's best to provide an event name. such as download.privilege",
+  EMIT_METHOD_EVENT_TYPE_WARN = "event type should be string, such as 'download.pic' or 'download.pic pay' or 'download.pic pay.privilege'",
   NO_EVENT_TIP = "no events are registered in the event center",
-  OFF_METHOD_EVENT_TYPE_WARN = "event type show be string,such as 'download.pic' or 'download.pic pay' or 'download.pic pay.privilege'",
+  OFF_METHOD_EVENT_TYPE_WARN = "event type should be string, such as 'download.pic' or 'download.pic pay' or 'download.pic pay.privilege'",
   OFFTYPE_METHOD_TYPE_WARN = "param type should be provided as string",
   REGISTER_EXCEEDED_WARN = "the number of events or handlers has exceeded the limit",
   NO_HANDLER_TIP = "no handler function found based on your input"
 }
 
-export { IHandler, IConfig, IEventValue, IListeners, IMatchHandlers, IHandlerDetails, SuggestionTips, Mode, ModeType }
+export {
+  IHandler,
+  IConfig,
+  IEventValue,
+  IListeners,
+  IMatchHandlers,
+  IHandlerDetails,
+  SuggestionTips,
+  Mode,
+  ModeType,
+  HandlerType
+}

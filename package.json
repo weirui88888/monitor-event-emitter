@@ -16,7 +16,8 @@
     "build": "rollup -c",
     "build:type": "tsc",
     "test": "jest --coverage --config jest.config.js",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "dev": "tsc && rollup -c"
   },
   "repository": {
     "type": "git",

@@ -7,9 +7,11 @@ import {
   IHandlerDetails,
   SuggestionTips,
   Mode,
-  ModeType
+  ModeType,
+  HandlerType
 } from "./type"
 import { isFunction, isAsyncFunction, isNumber, isObject, isString } from "./util"
+import PrettyScopeConsole from "pretty-scope-console"
 
 const defaultEventScope = "EventEmitter"
 /**
@@ -21,6 +23,8 @@ class EventEmitter {
   public maxHandlers: number | null
   public scope: string
   public mode: ModeType
+  public Debugger: PrettyScopeConsole
+  public coolEventEmitterWatcher: Record<string, IHandlerDetails>
   public events: Map<string, IEventValue[]>
   public eventEmitterWatcher: Map<string, IHandlerDetails>
   protected debug: boolean
@@ -37,7 +41,9 @@ class EventEmitter {
     this.events = new Map()
     // snapshot of processor operation
     this.eventEmitterWatcher = new Map()
+    this.coolEventEmitterWatcher = {}
     this.mode = config?.mode ? config.mode : Mode.default
+    this.Debugger = new PrettyScopeConsole(config?.scope || defaultEventScope)
   }
 
   /**
@@ -79,12 +85,12 @@ class EventEmitter {
    */
   countOfEventHandlers(event: string) {
     if (!isString(event)) {
-      console.log(SuggestionTips.TYPE_TYPE_WARN)
+      this.Debugger.warn(SuggestionTips.TYPE_TYPE_WARN)
       return 0
     }
     const handlers = this.events.get(event)
     if (!handlers) {
-      console.log(`${SuggestionTips.NO_EVENT_HANDLER_TIP} ${event} is 0`)
+      this.Debugger.info(`${SuggestionTips.NO_EVENT_HANDLER_TIP} ${event} is 0`)
       return 0
     }
     return handlers.length
@@ -98,7 +104,7 @@ class EventEmitter {
    */
   countOfTypeHandlers(type: string) {
     if (!isString(type)) {
-      console.log(SuggestionTips.TYPE_TYPE_WARN)
+      this.Debugger.warn(SuggestionTips.TYPE_TYPE_WARN)
       return 0
     }
     let allHandlers: IEventValue[] = []
@@ -110,12 +116,12 @@ class EventEmitter {
 
   on(event: string | IListeners, handler?: IHandler, order?: number) {
     if (!(isString(event) || isObject(event))) {
-      console.log(SuggestionTips.ON_METHOD_EVENT_TYPE_WARN)
+      this.Debugger.warn(SuggestionTips.ON_METHOD_EVENT_TYPE_WARN)
       return this
     }
     if (isString(event)) {
       if (!(isFunction(handler) || isAsyncFunction(handler))) {
-        console.log(SuggestionTips.HANDLER_TYPE_WARN)
+        this.Debugger.warn(SuggestionTips.HANDLER_TYPE_WARN)
         return this
       }
       return this._registerListener(event as string, handler as IHandler, order)
@@ -138,12 +144,12 @@ class EventEmitter {
   emit(event: string, ...args: any[]) {
     const reg = /^[A-Za-z][A-Za-z.]+(\s{1}[A-Za-z.]+)*/g
     if (!reg.test(event)) {
-      console.log(SuggestionTips.EMIT_METHOD_EVENT_TYPE_WARN)
+      this.Debugger.warn(SuggestionTips.EMIT_METHOD_EVENT_TYPE_WARN)
       return this
     }
 
     if (!this.events.size) {
-      console.log(SuggestionTips.NO_EVENT_TIP)
+      this.Debugger.info(SuggestionTips.NO_EVENT_TIP)
       return this
     }
     const events = event.split(" ")
@@ -163,7 +169,7 @@ class EventEmitter {
    */
   emitType(type: string, ...args: any[]) {
     if (!isString(type)) {
-      console.log(SuggestionTips.TYPE_TYPE_WARN)
+      this.Debugger.warn(SuggestionTips.TYPE_TYPE_WARN)
       return this
     }
     let typeHandlers: IMatchHandlers[] = []
@@ -184,9 +190,9 @@ class EventEmitter {
     }
     for (const { handler, id, type, eventName } of typeHandlers) {
       const result = handler(...args)
-      this._setWatcher(eventName, type, id, result, ...args)
+      const handlerType = isAsyncFunction(handler) ? HandlerType.async : HandlerType.sync
+      this._setWatcher(handlerType, eventName, type, id, result, ...args)
     }
-
     return this
   }
 
@@ -198,11 +204,7 @@ class EventEmitter {
    */
   watch(mode?: ModeType) {
     if (mode === Mode.cool || this.mode === Mode.cool) {
-      const coolWatcher = Object.create(null)
-      for (const [key, value] of this.eventEmitterWatcher) {
-        coolWatcher[key] = value
-      }
-      return coolWatcher
+      return this.coolEventEmitterWatcher
     }
     return this.eventEmitterWatcher
   }
@@ -211,12 +213,35 @@ class EventEmitter {
     const [eventName, type = ""] = event.split(".")
     const handlers = this._matchHandlers(eventName, type)
     if (handlers.length === 0) {
-      console.log(SuggestionTips.NO_HANDLER_TIP)
+      this.Debugger.info(SuggestionTips.NO_HANDLER_TIP)
       return this
     }
     for (const { handler, id, type, eventName } of handlers) {
-      const result = handler(...args)
-      this._setWatcher(eventName, type, id, result, ...args)
+      const handlerAsync = isAsyncFunction(handler)
+      const handlerType = handlerAsync ? HandlerType.async : HandlerType.sync
+      if (handlerAsync) {
+        try {
+          handler(...args)
+            .then((result: any) => {
+              this._setWatcher(handlerType, eventName, type, id, result, ...args)
+            })
+            .catch((err: any) => {
+              this._setWatcher(handlerType, eventName, type, id, err, ...args)
+            })
+        } catch (err: any) {
+          this.Debugger.error(err.message)
+        }
+      } else {
+        let result
+        try {
+          result = handler(...args)
+        } catch (err: any) {
+          result = err
+          this.Debugger.error(err.message)
+        } finally {
+          this._setWatcher(handlerType, eventName, type, id, result, ...args)
+        }
+      }
     }
   }
 
@@ -238,7 +263,7 @@ class EventEmitter {
   off(event: string) {
     const reg = /^[A-Za-z][A-Za-z.]+(\s{1}[A-Za-z.]+)*/g
     if (!reg.test(event)) {
-      console.log(SuggestionTips.OFF_METHOD_EVENT_TYPE_WARN)
+      this.Debugger.warn(SuggestionTips.OFF_METHOD_EVENT_TYPE_WARN)
       return this
     }
     const events = event.split(" ")
@@ -257,7 +282,7 @@ class EventEmitter {
    */
   offType(type: string) {
     if (!isString(type)) {
-      console.log(SuggestionTips.OFFTYPE_METHOD_TYPE_WARN)
+      this.Debugger.warn(SuggestionTips.OFFTYPE_METHOD_TYPE_WARN)
       return this
     }
     for (const key of this.eventKeys) {
@@ -295,14 +320,14 @@ class EventEmitter {
 
   protected _registerEvent(identifier: string, handler: IHandler, order?: number) {
     if (this._registerExceeded) {
-      console.log(SuggestionTips.REGISTER_EXCEEDED_WARN)
+      this.Debugger.warn(SuggestionTips.REGISTER_EXCEEDED_WARN)
       return this
     }
     const { events } = this
     const hasOrder = isNumber(order) && (order as number) >= 0
     const [event, type = ""] = identifier.split(".")
     if (!event) {
-      console.log(SuggestionTips.EVENT_WITH_TYPE_ONLY_TIP)
+      this.Debugger.info(SuggestionTips.EVENT_WITH_TYPE_ONLY_TIP)
       return this
     }
 
@@ -390,11 +415,40 @@ class EventEmitter {
     })
   }
 
-  protected _setWatcher(eventName: string, type: string, id: string, result: any, ...args: any[]) {
+  protected _setWatcher(
+    handlerType: keyof typeof HandlerType,
+    eventName: string,
+    type: string,
+    id: string,
+    result: any,
+    ...args: any[]
+  ) {
     if (!type) {
       type = "global"
     }
     const eventUuid = `${eventName}-${type}-${id}`
+
+    if (!this.coolEventEmitterWatcher[eventUuid]) {
+      this.coolEventEmitterWatcher[eventUuid] = {
+        count: 1,
+        details: [
+          {
+            result,
+            time: new Date(),
+            args,
+            handlerType
+          }
+        ]
+      }
+    } else {
+      const applyCount = this.coolEventEmitterWatcher[eventUuid].count
+      const applyDetails = this.coolEventEmitterWatcher[eventUuid].details
+      this.coolEventEmitterWatcher[eventUuid] = {
+        count: applyCount + 2,
+        details: [...applyDetails, { result, time: new Date(), args, handlerType }]
+      }
+    }
+
     if (!this.eventEmitterWatcher.has(eventUuid)) {
       this.eventEmitterWatcher.set(eventUuid, {
         count: 1,
@@ -402,7 +456,8 @@ class EventEmitter {
           {
             result,
             time: new Date(),
-            args
+            args,
+            handlerType
           }
         ]
       })
@@ -411,7 +466,7 @@ class EventEmitter {
       const applyDetails = (this.eventEmitterWatcher.get(eventUuid) as IHandlerDetails).details
       this.eventEmitterWatcher.set(eventUuid, {
         count: applyCount + 1,
-        details: [...applyDetails, { result, time: new Date(), args }]
+        details: [...applyDetails, { result, time: new Date(), args, handlerType }]
       })
     }
   }
