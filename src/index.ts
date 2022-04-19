@@ -1,24 +1,43 @@
-import { IConfig, IHandler, IEventValue, IListeners, IMatchHandlers, IHandlerDetails, SuggestionTips } from "./type"
+import {
+  IConfig,
+  IHandler,
+  IEventValue,
+  IListeners,
+  IMatchHandlers,
+  IHandlerDetails,
+  SuggestionTips,
+  Mode,
+  ModeType
+} from "./type"
 import { isFunction, isAsyncFunction, isNumber, isObject, isString } from "./util"
-const defaultEventScope = "EventEmitter"
 
+const defaultEventScope = "EventEmitter"
 /**
  * @description 事件处理器
  * @class EventEmitter
  */
 class EventEmitter {
   public maxEvents: number | null
+  public maxHandlers: number | null
   public scope: string
+  public mode: ModeType
   public events: Map<string, IEventValue[]>
   public eventEmitterWatcher: Map<string, IHandlerDetails>
   protected debug: boolean
   static version = "v0.0.1"
   constructor(config?: IConfig) {
+    // limit count about event
     this.maxEvents = config?.maxEvents ? config.maxEvents : null
+    // limit count about handler
+    this.maxHandlers = config?.maxHandlers ? config.maxHandlers : null
+    // the scope about this eventBus
     this.scope = config?.scope || defaultEventScope
     this.debug = config?.debug || false
+    // all event you registered
     this.events = new Map()
+    // snapshot of processor operation
     this.eventEmitterWatcher = new Map()
+    this.mode = config?.mode ? config.mode : Mode.default
   }
 
   /**
@@ -106,7 +125,179 @@ class EventEmitter {
     }
   }
 
+  /**
+   * @description 触发注册的事件
+   * @param {string} event 支持pay || pay.sticker  || pay.sticker download.font
+   * @example emit('pay') 将会触发事件名为pay的所有事件处理器
+   * @example emit('download.font') 将仅会触发事件名为download且事件类型为font的事件处理器
+   * @example emit('pay download.font') 将会触发事件名为pay的所有事件处理器以及事件名为download且事件类型为font的事件处理器
+   * @param {...any[]} args
+   * @return {*}
+   * @memberof EventEmitter
+   */
+  emit(event: string, ...args: any[]) {
+    const reg = /^[A-Za-z][A-Za-z.]+(\s{1}[A-Za-z.]+)*/g
+    if (!reg.test(event)) {
+      console.log(SuggestionTips.EMIT_METHOD_EVENT_TYPE_WARN)
+      return this
+    }
+
+    if (!this.events.size) {
+      console.log(SuggestionTips.NO_EVENT_TIP)
+      return this
+    }
+    const events = event.split(" ")
+    for (const event of events) {
+      this._emit(event, ...args)
+    }
+    return this
+  }
+
+  /**
+   * @description 以事件类型触发注册的事件
+   * @param {string} type
+   * @example emitType('font') 将会触发所有类型为font的事件，不区分时间名称
+   * @param {...any[]} args
+   * @return {*}
+   * @memberof EventEmitter
+   */
+  emitType(type: string, ...args: any[]) {
+    if (!isString(type)) {
+      console.log(SuggestionTips.TYPE_TYPE_WARN)
+      return this
+    }
+    let typeHandlers: IMatchHandlers[] = []
+    for (const [eventName, handlers] of this.events.entries()) {
+      const [typeHandler] = handlers.filter((handler) => handler.type === type) as IEventValue[]
+      if (typeHandler) {
+        const { id, type: eventType, handler } = typeHandler
+        typeHandlers = [
+          ...typeHandlers,
+          {
+            id,
+            type: eventType,
+            handler,
+            eventName
+          }
+        ]
+      }
+    }
+    for (const { handler, id, type, eventName } of typeHandlers) {
+      const result = handler(...args)
+      this._setWatcher(eventName, type, id, result, ...args)
+    }
+
+    return this
+  }
+
+  /**
+   * @description 获取当前已注册的事件处理器函数的的执行快照
+   * @param {ModeType} [mode]
+   * @returns {*}
+   * @memberof EventEmitter
+   */
+  watch(mode?: ModeType) {
+    if (mode === Mode.cool || this.mode === Mode.cool) {
+      const coolWatcher = Object.create(null)
+      for (const [key, value] of this.eventEmitterWatcher) {
+        coolWatcher[key] = value
+      }
+      return coolWatcher
+    }
+    return this.eventEmitterWatcher
+  }
+
+  protected _emit(event: string, ...args: any[]) {
+    const [eventName, type = ""] = event.split(".")
+    const handlers = this._matchHandlers(eventName, type)
+    if (handlers.length === 0) {
+      console.log(SuggestionTips.NO_HANDLER_TIP)
+      return this
+    }
+    for (const { handler, id, type, eventName } of handlers) {
+      const result = handler(...args)
+      this._setWatcher(eventName, type, id, result, ...args)
+    }
+  }
+
+  /**
+   * @description 清除所有的事件处理器
+   * @returns {*}
+   * @memberof EventEmitter
+   */
+  offAll() {
+    return this.events.clear()
+  }
+
+  /**
+   * @description 清除事件处理器
+   * @param {string} event
+   * @returns {*}
+   * @memberof EventEmitter
+   */
+  off(event: string) {
+    const reg = /^[A-Za-z][A-Za-z.]+(\s{1}[A-Za-z.]+)*/g
+    if (!reg.test(event)) {
+      console.log(SuggestionTips.OFF_METHOD_EVENT_TYPE_WARN)
+      return this
+    }
+    const events = event.split(" ")
+    for (const event of events) {
+      const [eventName, type = ""] = event.split(".")
+      this._off(eventName, type)
+    }
+    return this
+  }
+
+  /**
+   * @description 删除类型为type的事件处理器
+   * @param {string} type
+   * @returns {*}
+   * @memberof EventEmitter
+   */
+  offType(type: string) {
+    if (!isString(type)) {
+      console.log(SuggestionTips.OFFTYPE_METHOD_TYPE_WARN)
+      return this
+    }
+    for (const key of this.eventKeys) {
+      const handlers = this.events.get(key) || []
+      const handlerOfTypeIndex = handlers.findIndex((handler) => handler.type === type)
+      if (handlerOfTypeIndex >= 0) {
+        handlers.splice(handlerOfTypeIndex, 1)
+      }
+    }
+    this._deleteInvalidEvent()
+    return this
+  }
+
+  protected _off(eventName: string, type: string) {
+    if (eventName && type) {
+      const handlers = this.events.get(eventName) || []
+      const handlerOfTypeIndex = handlers.findIndex((handler) => handler.type === type)
+      if (handlerOfTypeIndex >= 0) {
+        handlers.splice(handlerOfTypeIndex, 1)
+      }
+    } else {
+      if (this.events.has(eventName)) {
+        this.events.delete(eventName)
+      }
+    }
+    this._deleteInvalidEvent()
+    return this
+  }
+
+  protected get _registerExceeded() {
+    const eventsExceeded = !!this.maxEvents && this.countOfEvents >= this.maxEvents
+    const handlersExceeded = !!this.maxHandlers && this.countOfAllHandlers >= this.maxHandlers
+    return eventsExceeded || handlersExceeded
+  }
+
   protected _registerEvent(identifier: string, handler: IHandler, order?: number) {
+    if (this._registerExceeded) {
+      console.log(SuggestionTips.REGISTER_EXCEEDED_WARN)
+      return this
+    }
     const { events } = this
     const hasOrder = isNumber(order) && (order as number) >= 0
     const [event, type = ""] = identifier.split(".")
@@ -157,153 +348,12 @@ class EventEmitter {
     return this
   }
 
-  /**
-   * @description 触发注册的事件
-   * @param {string} event 支持pay || pay.sticker  || pay.sticker download.font
-   * @example emit('pay') 将会触发事件名为pay的所有事件处理器
-   * @example emit('download.font') 将仅会触发事件名为download且事件类型为font的事件处理器
-   * @example emit('pay download.font') 将会触发事件名为pay的所有事件处理器以及事件名为download且事件类型为font的事件处理器
-   * @param {...any[]} args
-   * @return {*}
-   * @memberof EventEmitter
-   */
-  emit(event: string, ...args: any[]) {
-    const reg = /^[A-Za-z][A-Za-z.]+(\s{1}[A-Za-z.]+)*/g
-    if (!reg.test(event)) {
-      console.log(SuggestionTips.EMIT_METHOD_EVENT_TYPE_WARN)
-      return this
-    }
-
-    if (!this.events.size) {
-      console.log(SuggestionTips.NO_EVENT_TIP)
-      return this
-    }
-    const events = event.split(" ")
-    for (const event of events) {
-      this._emit(event, ...args)
-    }
-    return this
-  }
-
-  /**
-   * @description 清除所有的事件处理器
-   * @returns {*}
-   * @memberof EventEmitter
-   */
-  offAll() {
-    return this.events.clear()
-  }
-
-  /**
-   * @description 清除事件处理器
-   * @param {string} event
-   * @returns {*}
-   * @memberof EventEmitter
-   */
-  off(event: string) {
-    const reg = /^[A-Za-z][A-Za-z.]+(\s{1}[A-Za-z.]+)*/g
-    if (!reg.test(event)) {
-      console.log(SuggestionTips.OFF_METHOD_EVENT_TYPE_WARN)
-      return this
-    }
-    const events = event.split(" ")
-    for (const event of events) {
-      const [eventName, type = ""] = event.split(".")
-      this._off(eventName, type)
-    }
-    return this
-  }
-
-  protected _off(eventName: string, type: string) {
-    if (eventName && type) {
-      const handlers = this.events.get(eventName) || []
-      const handlerOfTypeIndex = handlers.findIndex((handler) => handler.type === type)
-      if (handlerOfTypeIndex >= 0) {
-        handlers.splice(handlerOfTypeIndex, 1)
-      }
-    } else {
-      if (this.events.has(eventName)) {
-        this.events.delete(eventName)
-      }
-    }
-    this._deleteInvalidEvent()
-    return this
-  }
-
-  /**
-   * @description 删除类型为type的事件处理器
-   * @param {string} type
-   * @returns {*}
-   * @memberof EventEmitter
-   */
-  offType(type: string) {
-    if (!isString(type)) {
-      console.log(SuggestionTips.OFFTYPE_METHOD_TYPE_WARN)
-      return this
-    }
-    for (const key of this.eventKeys) {
-      const handlers = this.events.get(key) || []
-      const handlerOfTypeIndex = handlers.findIndex((handler) => handler.type === type)
-      if (handlerOfTypeIndex >= 0) {
-        handlers.splice(handlerOfTypeIndex, 1)
-      }
-    }
-    this._deleteInvalidEvent()
-    return this
-  }
-
   protected _deleteInvalidEvent() {
     for (const key of this.eventKeys) {
       const handlers = this.events.get(key) || []
       if (handlers.length === 0) {
         this.events.delete(key)
       }
-    }
-  }
-
-  /**
-   * @description 以事件类型触发注册的事件
-   * @param {string} type
-   * @example emitType('font') 将会触发所有类型为font的事件，不区分时间名称
-   * @param {...any[]} args
-   * @return {*}
-   * @memberof EventEmitter
-   */
-  emitType(type: string, ...args: any[]) {
-    if (!isString(type)) {
-      console.log(SuggestionTips.TYPE_TYPE_WARN)
-      return this
-    }
-    let typeHandlers: IMatchHandlers[] = []
-    for (const [eventName, handlers] of this.events.entries()) {
-      const [typeHandler] = handlers.filter((handler) => handler.type === type) as IEventValue[]
-      if (typeHandler) {
-        const { id, type: eventType, handler } = typeHandler
-        typeHandlers = [
-          ...typeHandlers,
-          {
-            id,
-            type: eventType,
-            handler,
-            eventName
-          }
-        ]
-      }
-    }
-    for (const { handler, id, type, eventName } of typeHandlers) {
-      const result = handler(...args)
-      this._setWatcher(eventName, type, id, result, ...args)
-    }
-
-    return this
-  }
-
-  protected _emit(event: string, ...args: any[]) {
-    const [eventName, type = ""] = event.split(".")
-    const handlers = this._matchHandlers(eventName, type)
-    for (const { handler, id, type, eventName } of handlers) {
-      const result = handler(...args)
-      this._setWatcher(eventName, type, id, result, ...args)
     }
   }
 
@@ -364,10 +414,6 @@ class EventEmitter {
         details: [...applyDetails, { result, time: new Date(), args }]
       })
     }
-  }
-
-  watch() {
-    return this.eventEmitterWatcher
   }
 }
 

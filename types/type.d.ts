@@ -1,8 +1,15 @@
 declare type IHandler = (...params: any[]) => any;
+declare const enum Mode {
+    "default" = "default",
+    "cool" = "cool"
+}
+declare type ModeType = keyof typeof Mode;
 interface IConfig {
     maxEvents?: number;
+    maxHandlers?: number;
     scope?: string;
     debug?: boolean;
+    mode?: ModeType;
 }
 interface IEventValue {
     type: string;
@@ -37,6 +44,8 @@ declare const enum SuggestionTips {
     EMIT_METHOD_EVENT_TYPE_WARN = "event type show be string,such as 'download.pic' or 'download.pic pay' or 'download.pic pay.privilege'",
     NO_EVENT_TIP = "no events are registered in the event center",
     OFF_METHOD_EVENT_TYPE_WARN = "event type show be string,such as 'download.pic' or 'download.pic pay' or 'download.pic pay.privilege'",
-    OFFTYPE_METHOD_TYPE_WARN = "param type should be provided as string"
+    OFFTYPE_METHOD_TYPE_WARN = "param type should be provided as string",
+    REGISTER_EXCEEDED_WARN = "the number of events or handlers has exceeded the limit",
+    NO_HANDLER_TIP = "no handler function found based on your input"
 }
-export { IConfig, IHandler, IEventValue, IListeners, IMatchHandlers, IHandlerDetails, SuggestionTips };
+export { IHandler, IConfig, IEventValue, IListeners, IMatchHandlers, IHandlerDetails, SuggestionTips, Mode, ModeType };

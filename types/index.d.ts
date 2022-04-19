@@ -1,11 +1,13 @@
-import { IConfig, IHandler, IEventValue, IListeners, IMatchHandlers, IHandlerDetails } from "./type";
+import { IConfig, IHandler, IEventValue, IListeners, IMatchHandlers, IHandlerDetails, ModeType } from "./type";
 /**
  * @description 事件处理器
  * @class EventEmitter
  */
 declare class EventEmitter {
     maxEvents: number | null;
+    maxHandlers: number | null;
     scope: string;
+    mode: ModeType;
     events: Map<string, IEventValue[]>;
     eventEmitterWatcher: Map<string, IHandlerDetails>;
     protected debug: boolean;
@@ -44,9 +46,6 @@ declare class EventEmitter {
      */
     countOfTypeHandlers(type: string): number;
     on(event: string | IListeners, handler?: IHandler, order?: number): this | undefined;
-    protected _registerEvent(identifier: string, handler: IHandler, order?: number): this;
-    protected _registerListener(listener: string, handler: IHandler, order?: number): this;
-    protected _registerListeners(listeners: IListeners): this;
     /**
      * @description 触发注册的事件
      * @param {string} event 支持pay || pay.sticker  || pay.sticker download.font
@@ -58,6 +57,23 @@ declare class EventEmitter {
      * @memberof EventEmitter
      */
     emit(event: string, ...args: any[]): this;
+    /**
+     * @description 以事件类型触发注册的事件
+     * @param {string} type
+     * @example emitType('font') 将会触发所有类型为font的事件，不区分时间名称
+     * @param {...any[]} args
+     * @return {*}
+     * @memberof EventEmitter
+     */
+    emitType(type: string, ...args: any[]): this;
+    /**
+     * @description 获取当前已注册的事件处理器函数的的执行快照
+     * @param {ModeType} [mode]
+     * @returns {*}
+     * @memberof EventEmitter
+     */
+    watch(mode?: ModeType): any;
+    protected _emit(event: string, ...args: any[]): this | undefined;
     /**
      * @description 清除所有的事件处理器
      * @returns {*}
@@ -71,7 +87,6 @@ declare class EventEmitter {
      * @memberof EventEmitter
      */
     off(event: string): this;
-    protected _off(eventName: string, type: string): this;
     /**
      * @description 删除类型为type的事件处理器
      * @param {string} type
@@ -79,20 +94,14 @@ declare class EventEmitter {
      * @memberof EventEmitter
      */
     offType(type: string): this;
+    protected _off(eventName: string, type: string): this;
+    protected get _registerExceeded(): boolean;
+    protected _registerEvent(identifier: string, handler: IHandler, order?: number): this;
+    protected _registerListener(listener: string, handler: IHandler, order?: number): this;
+    protected _registerListeners(listeners: IListeners): this;
     protected _deleteInvalidEvent(): void;
-    /**
-     * @description 以事件类型触发注册的事件
-     * @param {string} type
-     * @example emitType('font') 将会触发所有类型为font的事件，不区分时间名称
-     * @param {...any[]} args
-     * @return {*}
-     * @memberof EventEmitter
-     */
-    emitType(type: string, ...args: any[]): this;
-    protected _emit(event: string, ...args: any[]): void;
     protected _matchHandlers(eventName: string, type: string): IMatchHandlers[];
     protected _uuid(): string;
     protected _setWatcher(eventName: string, type: string, id: string, result: any, ...args: any[]): void;
-    watch(): Map<string, IHandlerDetails>;
 }
 export default EventEmitter;

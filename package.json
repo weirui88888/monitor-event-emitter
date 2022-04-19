@@ -60,5 +60,8 @@
     "*.{js,ts}": [
       "eslint src --fix --ext .ts"
     ]
+  },
+  "dependencies": {
+    "pretty-scope-console": "^1.0.5"
   }
 }

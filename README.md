@@ -227,7 +227,7 @@ eventsBus.countOfAllHandlers // 3
 ## TODO
 
 - [ ] Real-time log printing can be supported by enabling debug mode (currently, only viewing and executing snapshots by calling `eventsBus.watch()` is supported)
-- [ ] Add maximum number of event handlers
+- [x] Add maximum number of event handlers
 - [ ] Beautify console log information
 - [ ] Support log simple mode（At present, the data type in it is implemented by map, which is very convenient to write, but may not be very comfortable to read）
 

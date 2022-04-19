@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body></body>
+  <script src="./lib/bundle.browser.js?t=5"></script>
+  <script>
+    const eventBus = new PrettyEventEmitter({
+      maxEvents: 2,
+      scope: "Membership"
+    })
+
+    eventBus.on("pay.font", (status) => {
+      return status
+    })
+
+    eventBus.emit("pay", 123)
+
+    const watcher = eventBus.watch("cool")
+    console.log(eventBus.eventKeys)
+  </script>
+</html>

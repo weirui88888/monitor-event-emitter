@@ -130,3 +130,52 @@ test("error type of handler", () => {
   const unExpectEventRes = emitter.on("read", true)
   expect(unExpectEventRes instanceof EventEmitter).toBe(true)
 })
+
+test("event register exceeded warn", () => {
+  const emitter = new EventEmitter({
+    maxEvents: 2
+  })
+
+  const handle1 = jest.fn()
+  const handle2 = jest.fn()
+  const handle3 = jest.fn()
+  emitter.on("download", handle1)
+  emitter.on("pay", handle2)
+  const unExpectEventRes = emitter.on("pick", handle3)
+  expect(unExpectEventRes instanceof EventEmitter).toBe(true)
+})
+
+test("handler register exceeded warn", () => {
+  const emitter = new EventEmitter({
+    maxHandlers: 2
+  })
+
+  const handle1 = jest.fn()
+  const handle2 = jest.fn()
+  emitter.on("download.font download.sticker download.packet", handle1)
+  const unExpectEventRes = emitter.on("pay", handle2)
+  expect(unExpectEventRes instanceof EventEmitter).toBe(true)
+})
+
+test("handler register exceeded warn", () => {
+  const emitter = new EventEmitter({
+    maxHandlers: 2
+  })
+
+  const handle1 = jest.fn()
+  const handle2 = jest.fn()
+  emitter.on("download.font download.sticker download.packet", handle1)
+  const unExpectEventRes = emitter.on("pay", handle2)
+  expect(unExpectEventRes instanceof EventEmitter).toBe(true)
+})
+
+test("no handler function found based on your input", () => {
+  const emitter = new EventEmitter({
+    mode: "cool"
+  })
+
+  const handle1 = jest.fn()
+  emitter.on("download.font", handle1)
+  const unExpectEventRes = emitter.emit("font")
+  expect(unExpectEventRes instanceof EventEmitter).toBe(true)
+})
