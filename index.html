@@ -9,7 +9,7 @@
   <body>
     <div id="app"></div>
   </body>
-  <script src="./lib/bundle.browser.js?t=33336321"></script>
+  <script src="./lib/bundle.browser.js?t=73131313"></script>
   <script>
     window.onload = function () {
       const eventBus = new PrettyEventEmitter({
@@ -17,7 +17,7 @@
         scope: "Membership"
       })
 
-      eventBus.on("pay.font", (status) => {
+      eventBus.on("pay.font pay.sticker", (status) => {
         return status
       })
       eventBus.on("download.sticker", async (random) => {
@@ -34,14 +34,20 @@
                 code: random
               })
             }
-          }, 3000)
+          }, 2000)
         })
       })
 
       eventBus.emit("download.sticker", Math.random())
 
-      const watcher = eventBus.watch()
-      console.log(watcher)
+      // eventBus.watch("cool")
+
+      eventBus.emit("pay.font", true)
+
+      setTimeout(() => {
+        eventBus.emit("pay.font", false)
+        eventBus.emit("pay.sticker", false, { a: 10, b: 20 })
+      }, 5000)
 
       document.getElementById("app").innerText = "hello world"
     }

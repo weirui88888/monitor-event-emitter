@@ -10,7 +10,7 @@ import {
   ModeType,
   HandlerType
 } from "./type"
-import { isFunction, isAsyncFunction, isNumber, isObject, isString } from "./util"
+import { isFunction, isAsyncFunction, isNumber, isObject, isString, isArray } from "./util"
 import PrettyScopeConsole from "pretty-scope-console"
 
 const defaultEventScope = "EventEmitter"
@@ -24,9 +24,12 @@ class EventEmitter {
   public scope: string
   public mode: ModeType
   public Debugger: PrettyScopeConsole
-  public coolEventEmitterWatcher: Record<string, IHandlerDetails>
+  // public coolEventEmitterWatcher: Record<string, IHandlerDetails>
   public events: Map<string, IEventValue[]>
   public eventEmitterWatcher: Map<string, IHandlerDetails>
+  public shouldHandlerNumber: number
+  public handlerdNumber: number
+  public watchIntervalId: any
   protected debug: boolean
   static version = "v0.0.1"
   constructor(config?: IConfig) {
@@ -41,9 +44,12 @@ class EventEmitter {
     this.events = new Map()
     // snapshot of processor operation
     this.eventEmitterWatcher = new Map()
-    this.coolEventEmitterWatcher = {}
+    // this.coolEventEmitterWatcher = {}
     this.mode = config?.mode ? config.mode : Mode.default
     this.Debugger = new PrettyScopeConsole(config?.scope || defaultEventScope)
+    this.shouldHandlerNumber = 0
+    this.handlerdNumber = 0
+    this.watchIntervalId = null
   }
 
   /**
@@ -142,6 +148,8 @@ class EventEmitter {
    * @memberof EventEmitter
    */
   emit(event: string, ...args: any[]) {
+    clearInterval(this.watchIntervalId)
+    this._setWatchInteraval("cool")
     const reg = /^[A-Za-z][A-Za-z.]+(\s{1}[A-Za-z.]+)*/g
     if (!reg.test(event)) {
       this.Debugger.warn(SuggestionTips.EMIT_METHOD_EVENT_TYPE_WARN)
@@ -172,6 +180,8 @@ class EventEmitter {
       this.Debugger.warn(SuggestionTips.TYPE_TYPE_WARN)
       return this
     }
+    clearInterval(this.watchIntervalId)
+    this._setWatchInteraval("cool")
     let typeHandlers: IMatchHandlers[] = []
     for (const [eventName, handlers] of this.events.entries()) {
       const [typeHandler] = handlers.filter((handler) => handler.type === type) as IEventValue[]
@@ -202,11 +212,40 @@ class EventEmitter {
    * @returns {*}
    * @memberof EventEmitter
    */
-  watch(mode?: ModeType) {
-    if (mode === Mode.cool || this.mode === Mode.cool) {
-      return this.coolEventEmitterWatcher
-    }
-    return this.eventEmitterWatcher
+  // watch(mode?: ModeType) {
+  //   const watchMode = (mode && mode === Mode.cool) || this.mode === Mode.cool ? Mode.cool : Mode.default
+  //   this._setWatchInteraval(watchMode)
+  // }
+
+  _setWatchInteraval(mode: ModeType) {
+    clearInterval(this.watchIntervalId)
+    this.watchIntervalId = setInterval(() => {
+      if (this.handlerdNumber === this.shouldHandlerNumber) {
+        // const coolWatcher = Object.create(null)
+        const coolWatcher = []
+        for (const [key, value] of this.eventEmitterWatcher) {
+          for (const detail of value.details) {
+            const tableDetail: any = detail
+            if (isObject(tableDetail.result)) {
+              tableDetail.result = JSON.stringify(tableDetail.result)
+            }
+            if (isArray(tableDetail.args)) {
+              tableDetail.args = JSON.stringify(tableDetail.args)
+            }
+            coolWatcher.push({
+              key,
+              ...tableDetail
+            })
+          }
+        }
+        if (mode === Mode.cool) {
+          console.table(coolWatcher)
+        } else {
+          console.log(this.eventEmitterWatcher)
+        }
+        clearInterval(this.watchIntervalId)
+      }
+    }, 100)
   }
 
   protected _emit(event: string, ...args: any[]) {
@@ -216,6 +255,8 @@ class EventEmitter {
       this.Debugger.info(SuggestionTips.NO_HANDLER_TIP)
       return this
     }
+
+    this.shouldHandlerNumber += handlers.length
     for (const { handler, id, type, eventName } of handlers) {
       const handlerAsync = isAsyncFunction(handler)
       const handlerType = handlerAsync ? HandlerType.async : HandlerType.sync
@@ -223,9 +264,11 @@ class EventEmitter {
         try {
           handler(...args)
             .then((result: any) => {
+              this.handlerdNumber++
               this._setWatcher(handlerType, eventName, type, id, result, ...args)
             })
             .catch((err: any) => {
+              this.handlerdNumber++
               this._setWatcher(handlerType, eventName, type, id, err, ...args)
             })
         } catch (err: any) {
@@ -239,6 +282,7 @@ class EventEmitter {
           result = err
           this.Debugger.error(err.message)
         } finally {
+          this.handlerdNumber++
           this._setWatcher(handlerType, eventName, type, id, result, ...args)
         }
       }
@@ -428,26 +472,26 @@ class EventEmitter {
     }
     const eventUuid = `${eventName}-${type}-${id}`
 
-    if (!this.coolEventEmitterWatcher[eventUuid]) {
-      this.coolEventEmitterWatcher[eventUuid] = {
-        count: 1,
-        details: [
-          {
-            result,
-            time: new Date(),
-            args,
-            handlerType
-          }
-        ]
-      }
-    } else {
-      const applyCount = this.coolEventEmitterWatcher[eventUuid].count
-      const applyDetails = this.coolEventEmitterWatcher[eventUuid].details
-      this.coolEventEmitterWatcher[eventUuid] = {
-        count: applyCount + 2,
-        details: [...applyDetails, { result, time: new Date(), args, handlerType }]
-      }
-    }
+    // if (!this.coolEventEmitterWatcher[eventUuid]) {
+    //   this.coolEventEmitterWatcher[eventUuid] = {
+    //     count: 1,
+    //     details: [
+    //       {
+    //         result,
+    //         time: new Date(),
+    //         args,
+    //         handlerType
+    //       }
+    //     ]
+    //   }
+    // } else {
+    //   const applyCount = this.coolEventEmitterWatcher[eventUuid].count
+    //   const applyDetails = this.coolEventEmitterWatcher[eventUuid].details
+    //   this.coolEventEmitterWatcher[eventUuid] = {
+    //     count: applyCount + 2,
+    //     details: [...applyDetails, { result, time: new Date(), args, handlerType }]
+    //   }
+    // }
 
     if (!this.eventEmitterWatcher.has(eventUuid)) {
       this.eventEmitterWatcher.set(eventUuid, {
