@@ -1,10 +1,10 @@
-# MonitorEventEmitter ![language-typescript](https://img.shields.io/badge/typescript-blue?style=flat&logo=typescript&logoColor=white) [![codecov](https://codecov.io/gh/weirui88888/monitor-event-emitter/branch/master/graph/badge.svg?token=T9PAH7EJN1)](https://codecov.io/gh/weirui88888/monitor-event-emitter)
+# MonitorEventEmitter ![language-typescript](https://img.shields.io/badge/typescript-blue?style=flat&logo=typescript&logoColor=white) [![codecov](https://codecov.io/gh/weirui88888/monitor-event-emitter/branch/master/graph/badge.svg?token=AU474UU208)](https://codecov.io/gh/weirui88888/monitor-event-emitter)
 
 [中文文档](./README-ZH.md)
 
 ## Why
 
-By using it, you can easily register and trigger events. At the same time, you can observe the snapshot information of the event handler execution in the console in real time.
+By using it, you can easily register and trigger events. At the same time, you can observe the **snapshot information** of the event handler execution in real time in the **console**, so as to **locate the problems** of some complex scenarios.
 
 Also,You can extend your business module with this base class, such as:
 
@@ -17,8 +17,12 @@ class derivedClass extends MonitorEventEmitter {
   }
   ...your code
 }
-
+// By inheriting this way, your derived class has all the properties and methods of the base class
 ```
+
+## Overview
+
+:tada: In order to reduce the cost of use, the library holds the principle of openness without any constraints. You can even instantiate without passing any parameters and it will still work just fine. But in order to better fit your expected goals, you can choose to make some necessary configurations.Please refer to the currently supported parameters [Config](#config)
 
 ## Install
 
@@ -40,13 +44,15 @@ const EventEmitter = require("monitor-event-emitter")
 
 const eventsBus = new EventEmitter()
 
-eventsBus.on("download", (status) => console.log(status))
+eventsBus.on("download.avatar", (status) => console.log(status)) // register a handler with event download and type avatar
 
-eventsBus.emit("download", true)
+eventsBus.emit("download", true) // emit by event download
 
-eventsBus.off("download")
+eventsBus.emitType("avatar", false) // emit by type avatar
 
-eventsBus.watch() // monitor the operation of all registered processors
+eventsBus.off("download") // off handlers which name is download
+
+...
 ```
 
 ## Support Api
@@ -61,12 +67,60 @@ Register for one or more events at the same time
 eventsBus.on("download", (...args:[]) => {...}) // only register a single handler with eventName download
 eventsBus.on("download.image", (...args:[]) => {...}) // register a single handler with eventName download and type image
 eventsBus.on("download pay.membership", (...args:[]) => {...}) // at the same time register a single handler with eventName download, and eventName pay with type membership
+eventsBus.on('download.avatar download.image download.privilege pay.membership pay.privilege') // register multiple event handlers with event name and type name at the same time
 ```
 
-- `attention`
+- `expand && attention （If your usage scenario is relatively simple, you can ignore the following complex usage, and it can still support you to complete your work well）`
 
-  - Although multiple events are registered, they all have the same event handler
-  - **An event may correspond to multiple different types of event handlers**
+  - **an event may correspond to multiple event handler functions of different types, and the class names of different events may be the same. The purpose of this design is to achieve batch processing of functions with the same logic, but it may not be necessary in most usage scenarios, as below**
+    - download (event)
+      - avatar (type)
+      - image (type)
+      - privilege (type)
+      - ...
+    - pay (event)
+      - membership (type)
+      - privilege (type)
+      - ...
+  - if you register the event handler as shown above, your event hub will look like this
+
+  ```javascript
+    // eventsBus.events（It is actually a map structure, which is in object form for convenience.）
+    {
+      download: [
+        {
+          type:'avatar',
+          handler:()=>{},
+          id:uuid
+        },
+        {
+          type:'image',
+          handler:()=>{},
+          id:uuid
+        },
+        {
+          type:'privilege',
+          handler:()=>{},
+          id:uuid
+        }
+      ],
+      pay: [
+        {
+          type:'membership',
+          handler:()=>{},
+          id:uuid
+        },
+        {
+          type:'privilege',
+          handler:()=>{},
+          id:uuid
+        },
+      ]
+    }
+    // you can call eventsBus.emitType('privilege')，thus executing 3, 5 simultaneously
+    // you can call eventsBus.emit('download')，thus executing 1, 2, 3 simultaneously
+    // When you want to call a certain type of event handler function under a specific event name，you can call eventsBus.emit('pay.privilege')，so as to execute exactly 5
+  ```
 
 ### `eventsBus.emit(event,...args)`
 
@@ -91,7 +145,6 @@ eventsBus.emit('download') // both of download.privilege and download.image hand
 
 **exact mode**
 eventsBus.emit('download.privilege') // only download.privilege will be trigger
-
 ```
 
 ### `eventsBus.emitType(type)`
@@ -115,17 +168,6 @@ eventsBus.on('download.privilege pay.privilege',(status,type)=>{
 
 **type mode**
 eventsBus.emitType('privilege',true,'font') // both of download.privilege and pay.privilege handler will be trigger
-```
-
-### `eventsBus.watch()`
-
-:heart_eyes_cat: In order to be able to easily know the execution of the event handler. Provides a watch method that returns the order of execution of all events, parameters and return values, and call time.
-
-So if you get some doubts when using it, you can try calling it.
-
-```javascript
-const watcher = eventsBus.watch()
-console.log(watcher)
 ```
 
 ### `eventsBus.off(event)`
@@ -224,12 +266,27 @@ eventsBus.on("download.privilege pay.privilege download.font", (status, type) =>
 eventsBus.countOfAllHandlers // 3
 ```
 
+## Config
+
+- `maxEvents | number`
+  - The maximum number of events that can be registered, the default is unlimited registration
+- `maxHandlers | number`
+  - The maximum number of event handler functions that can be registered, the default is unlimited registration
+- `scope | string`
+  - The **scope** of the event center is for the convenience of distinguishing events under different business logic. After setting, any log of the console will be named after it, mainly for the convenience of identifying and distinguishing the events under different modules
+- `debug | boolean`
+  - Controls whether real-time logs can be seen in the console. The default value is `false`, which needs to be set to `true` to see it. In general, it needs to be configured according to the environment variable `process.env.production`
+- `mode | 'cool' or 'default'`
+  - The representation of the console log. At the beginning of the design of this library, in order to facilitate the implementation of logic, the event center structure is implemented with `map`. But later found that it doesn't look very intuitive and beautiful in the console, so the `mode` configuration item was added. The options are `default` and `cool`, `default` means to use the default `map` structure for display, `cool` will be converted to **console table** `array` structure for display. Now the default is `cool` mode, which is more intuitive and clear
+
 ## TODO
 
-- [ ] Real-time log printing can be supported by enabling debug mode (currently, only viewing and executing snapshots by calling `eventsBus.watch()` is supported)
+- [x] Real-time log printing can be supported by enabling debug mode
 - [x] Add maximum number of event handlers
-- [ ] Beautify console log information
-- [ ] Support log simple mode（At present, the data type in it is implemented by map, which is very convenient to write, but may not be very comfortable to read）
+- [x] Beautify console log information
+- [x] Support log simple mode（At present, the data type in it is implemented by map, which is very convenient to write, but may not be very comfortable to read）
+- [ ] Improve unit testing
+- [ ] Add console log rendering and explain its meaning
 
 ## Contributing
 
