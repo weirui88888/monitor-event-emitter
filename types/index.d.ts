@@ -11,7 +11,10 @@ declare class EventEmitter {
     mode: ModeType;
     Debugger: PrettyScopeConsole;
     events: Map<string, IEventValue[]>;
-    eventEmitterWatcher: Map<string, IHandlerDetails>;
+    protected eventEmitterWatcher: Map<string, IHandlerDetails>;
+    protected shouldHandledCount: number;
+    protected handledCount: number;
+    protected watchIntervalId: any;
     protected debug: boolean;
     static version: string;
     constructor(config?: IConfig);
@@ -21,6 +24,12 @@ declare class EventEmitter {
      * @memberof EventEmitter
      */
     get eventKeys(): IterableIterator<string>;
+    /**
+     * @description 获取控制台快照的表现模式
+     * @readonly
+     * @memberof EventEmitter
+     */
+    get snapshotMode(): "default" | "cool";
     /**
      * @description 获取当前注册的事件数量，注册事件的数量并不等于处理器的数量，一个事件可能对应多个处理器
      * @readonly
@@ -68,13 +77,7 @@ declare class EventEmitter {
      * @memberof EventEmitter
      */
     emitType(type: string, ...args: any[]): this;
-    /**
-     * @description 获取当前已注册的事件处理器函数的的执行快照
-     * @param {ModeType} [mode]
-     * @returns {*}
-     * @memberof EventEmitter
-     */
-    watch(mode?: ModeType): any;
+    protected _setWatchInterval(): this | undefined;
     protected _emit(event: string, ...args: any[]): this | undefined;
     /**
      * @description 清除所有的事件处理器

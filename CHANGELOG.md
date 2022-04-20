@@ -1,6 +1,6 @@
 <!-- Keep a Changelog guide -> https://keepachangelog.com -->
 
-# pretty-event-emitter changelog
+# monitor-event-emitter changelog
 
 ## [V1.0.0]
 

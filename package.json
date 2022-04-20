@@ -1,5 +1,5 @@
 {
-  "name": "pretty-event-emitter",
+  "name": "monitor-event-emitter",
   "version": "1.0.0",
   "description": "A lightweight event monitoring processor",
   "main": "lib/bundle.cjs.js",
@@ -21,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/weirui88888/pretty-event-emitter.git"
+    "url": "https://github.com/weirui88888/monitor-event-emitter.git"
   },
   "keywords": [
     "event",

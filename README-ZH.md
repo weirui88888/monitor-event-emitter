@@ -1,4 +1,4 @@
-# EventEmitter ![language-typescript](https://img.shields.io/badge/typescript-blue?style=flat&logo=typescript&logoColor=white) [![codecov](https://codecov.io/gh/weirui88888/pretty-event-emitter/branch/master/graph/badge.svg?token=T9PAH7EJN1)](https://codecov.io/gh/weirui88888/pretty-event-emitter)
+# EventEmitter ![language-typescript](https://img.shields.io/badge/typescript-blue?style=flat&logo=typescript&logoColor=white) [![codecov](https://codecov.io/gh/weirui88888/monitor-event-emitter/branch/master/graph/badge.svg?token=T9PAH7EJN1)](https://codecov.io/gh/weirui88888/monitor-event-emitter)
 
 [English Doc](./README.md)
 
@@ -9,7 +9,7 @@
 你也可以基于该基类封装自己的业务代码。
 
 ```javascript
-import EventEmitter from "pretty-event-emitter"
+import EventEmitter from "monitor-event-emitter"
 
 class derivedClass extends EventEmitter {
   constructor(config) {
@@ -25,7 +25,7 @@ class derivedClass extends EventEmitter {
 轻量级的事件监控处理器，支持`cmj`、`esm`、`umd`模块。
 
 ```javascript
-npm i -S pretty-event-emitter
+npm i -S monitor-event-emitter
 ```
 
 ## 使用方式
@@ -34,9 +34,9 @@ npm i -S pretty-event-emitter
 
 ```javascript
 // esm
-import EventEmitter from "pretty-event-emitter"
+import EventEmitter from "monitor-event-emitter"
 // or cmj
-const EventEmitter = require("pretty-event-emitter")
+const EventEmitter = require("monitor-event-emitter")
 
 const eventsBus = new EventEmitter()
 
@@ -231,6 +231,6 @@ eventsBus.countOfAllHandlers // 3
 
 ## Contributing
 
-欢迎通过 [issues](https://github.com/weirui88888/pretty-event-emitter/issues) 或者 [prs](https://github.com/weirui88888/pretty-event-emitter/pulls) 向我提出问题.
+欢迎通过 [issues](https://github.com/weirui88888/monitor-event-emitter/issues) 或者 [prs](https://github.com/weirui88888/monitor-event-emitter/pulls) 向我提出问题.
 
-[![](https://img.shields.io/badge/github-@issue-green.svg?logo=github)](https://github.com/weirui88888/pretty-event-emitter/issues) [![](https://img.shields.io/badge/github-@pr-green.svg?logo=github)](https://github.com/weirui88888/pretty-event-emitter/pulls)
+[![](https://img.shields.io/badge/github-@issue-green.svg?logo=github)](https://github.com/weirui88888/monitor-event-emitter/issues) [![](https://img.shields.io/badge/github-@pr-green.svg?logo=github)](https://github.com/weirui88888/monitor-event-emitter/pulls)

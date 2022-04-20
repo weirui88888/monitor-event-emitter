@@ -1,4 +1,4 @@
-# EventEmitter ![language-typescript](https://img.shields.io/badge/typescript-blue?style=flat&logo=typescript&logoColor=white) [![codecov](https://codecov.io/gh/weirui88888/pretty-event-emitter/branch/master/graph/badge.svg?token=T9PAH7EJN1)](https://codecov.io/gh/weirui88888/pretty-event-emitter)
+# MonitorEventEmitter ![language-typescript](https://img.shields.io/badge/typescript-blue?style=flat&logo=typescript&logoColor=white) [![codecov](https://codecov.io/gh/weirui88888/monitor-event-emitter/branch/master/graph/badge.svg?token=T9PAH7EJN1)](https://codecov.io/gh/weirui88888/monitor-event-emitter)
 
 [中文文档](./README-ZH.md)
 
@@ -9,9 +9,9 @@ By using it, you can easily register and trigger events. At the same time, you c
 Also,You can extend your business module with this base class, such as:
 
 ```javascript
-import EventEmitter from "pretty-event-emitter"
+import EventEmitter from "monitor-event-emitter"
 
-class derivedClass extends EventEmitter {
+class derivedClass extends MonitorEventEmitter {
   constructor(config) {
     super(config)
   }
@@ -25,7 +25,7 @@ class derivedClass extends EventEmitter {
 A lightweight event monitoring processor. Support `cmj`、`esm`、`umd`module.
 
 ```javascript
-npm i -S pretty-event-emitter
+npm i -S monitor-event-emitter
 ```
 
 ## Usage
@@ -34,9 +34,9 @@ This is just the most basic way to use it. For more usage, please refer to [Supp
 
 ```javascript
 // esm
-import EventEmitter from "pretty-event-emitter"
+import EventEmitter from "monitor-event-emitter"
 // or cmj
-const EventEmitter = require("pretty-event-emitter")
+const EventEmitter = require("monitor-event-emitter")
 
 const eventsBus = new EventEmitter()
 
@@ -233,6 +233,6 @@ eventsBus.countOfAllHandlers // 3
 
 ## Contributing
 
-Feel free to submit [issues](https://github.com/weirui88888/pretty-event-emitter/issues) or [prs](https://github.com/weirui88888/pretty-event-emitter/pulls) to me.
+Feel free to submit [issues](https://github.com/weirui88888/monitor-event-emitter/issues) or [prs](https://github.com/weirui88888/monitor-event-emitter/pulls) to me.
 
-[![](https://img.shields.io/badge/github-@issue-green.svg?logo=github)](https://github.com/weirui88888/pretty-event-emitter/issues) [![](https://img.shields.io/badge/github-@pr-green.svg?logo=github)](https://github.com/weirui88888/pretty-event-emitter/pulls)
+[![](https://img.shields.io/badge/github-@issue-green.svg?logo=github)](https://github.com/weirui88888/monitor-event-emitter/issues) [![](https://img.shields.io/badge/github-@pr-green.svg?logo=github)](https://github.com/weirui88888/monitor-event-emitter/pulls)
