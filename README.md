@@ -4,7 +4,9 @@
 
 ## Why
 
-By using it, you can easily register and trigger events. At the same time, you can observe the **snapshot information** of the event handler execution in real time in the **console**, so as to **locate the problems** of some complex scenarios.
+A lightweight event monitoring processor. Support `cmj`、`esm`、`umd` module
+
+By using it, you can easily register and trigger events. At the same time, you can observe the **snapshot information** of the event handler execution in real time in the **console**, so as to **locate the problems** of some complex scenarios
 
 Also,You can extend your business module with this base class, such as:
 
@@ -25,8 +27,6 @@ class derivedClass extends MonitorEventEmitter {
 :tada: In order to reduce the cost of use, the library holds the principle of openness without any constraints. You can even instantiate without passing any parameters and it will still work just fine. But in order to better fit your expected goals, you can choose to make some necessary configurations.Please refer to the currently supported parameters [Config](#config)
 
 ## Install
-
-A lightweight event monitoring processor. Support `cmj`、`esm`、`umd`module.
 
 ```javascript
 npm i -S monitor-event-emitter
