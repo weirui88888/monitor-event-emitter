@@ -9,17 +9,18 @@
   <body>
     <div id="app"></div>
   </body>
-  <script src="./lib/bundle.browser.js?t=73131313"></script>
+  <script src="./lib/bundle.browser.js?t=3383091334141178332111421179"></script>
   <script>
     window.onload = function () {
       const eventBus = new PrettyEventEmitter({
         maxEvents: 3,
-        scope: "Membership"
+        scope: "MY Test",
+        debug: true
       })
 
-      eventBus.on("pay.font pay.sticker", (status) => {
-        return status
-      })
+      // eventBus.on("exchanged", (status) => {
+      //   return status
+      // })
       eventBus.on("download.sticker", async (random) => {
         return new Promise((resolve, reject) => {
           setTimeout(() => {
@@ -34,20 +35,19 @@
                 code: random
               })
             }
-          }, 2000)
+          }, 1000)
         })
       })
 
-      eventBus.emit("download.sticker", Math.random())
-
-      // eventBus.watch("cool")
-
-      eventBus.emit("pay.font", true)
+      // eventBus.emit("exchanged", true)
 
       setTimeout(() => {
-        eventBus.emit("pay.font", false)
-        eventBus.emit("pay.sticker", false, { a: 10, b: 20 })
-      }, 5000)
+        eventBus.emit("download.sticker", Math.random())
+      }, 2000)
+
+      // setTimeout(() => {
+      //   eventBus.emitType("sticker", Math.random())
+      // }, 5000)
 
       document.getElementById("app").innerText = "hello world"
     }

@@ -24,12 +24,11 @@ class EventEmitter {
   public scope: string
   public mode: ModeType
   public Debugger: PrettyScopeConsole
-  // public coolEventEmitterWatcher: Record<string, IHandlerDetails>
   public events: Map<string, IEventValue[]>
-  public eventEmitterWatcher: Map<string, IHandlerDetails>
-  public shouldHandlerNumber: number
-  public handlerdNumber: number
-  public watchIntervalId: any
+  protected eventEmitterWatcher: Map<string, IHandlerDetails>
+  protected shouldHandledCount: number
+  protected handledCount: number
+  protected watchIntervalId: any
   protected debug: boolean
   static version = "v0.0.1"
   constructor(config?: IConfig) {
@@ -44,11 +43,13 @@ class EventEmitter {
     this.events = new Map()
     // snapshot of processor operation
     this.eventEmitterWatcher = new Map()
-    // this.coolEventEmitterWatcher = {}
-    this.mode = config?.mode ? config.mode : Mode.default
+    // Controls how processor execution snapshots appear in the console, should provide with 'default' or 'cool'
+    this.mode = config?.mode ? config.mode : Mode.cool
     this.Debugger = new PrettyScopeConsole(config?.scope || defaultEventScope)
-    this.shouldHandlerNumber = 0
-    this.handlerdNumber = 0
+    // should be handled count
+    this.shouldHandledCount = 0
+    // always handled count
+    this.handledCount = 0
     this.watchIntervalId = null
   }
 
@@ -61,6 +62,14 @@ class EventEmitter {
     return this.events.keys()
   }
 
+  /**
+   * @description 获取控制台快照的表现模式
+   * @readonly
+   * @memberof EventEmitter
+   */
+  get snapshotMode() {
+    return this.mode
+  }
   /**
    * @description 获取当前注册的事件数量，注册事件的数量并不等于处理器的数量，一个事件可能对应多个处理器
    * @readonly
@@ -149,13 +158,11 @@ class EventEmitter {
    */
   emit(event: string, ...args: any[]) {
     clearInterval(this.watchIntervalId)
-    this._setWatchInteraval("cool")
     const reg = /^[A-Za-z][A-Za-z.]+(\s{1}[A-Za-z.]+)*/g
     if (!reg.test(event)) {
       this.Debugger.warn(SuggestionTips.EMIT_METHOD_EVENT_TYPE_WARN)
       return this
     }
-
     if (!this.events.size) {
       this.Debugger.info(SuggestionTips.NO_EVENT_TIP)
       return this
@@ -181,7 +188,6 @@ class EventEmitter {
       return this
     }
     clearInterval(this.watchIntervalId)
-    this._setWatchInteraval("cool")
     let typeHandlers: IMatchHandlers[] = []
     for (const [eventName, handlers] of this.events.entries()) {
       const [typeHandler] = handlers.filter((handler) => handler.type === type) as IEventValue[]
@@ -198,30 +204,62 @@ class EventEmitter {
         ]
       }
     }
+    if (typeHandlers.length != 0) {
+      this._setWatchInterval()
+    }
+    this.shouldHandledCount += typeHandlers.length
+
     for (const { handler, id, type, eventName } of typeHandlers) {
-      const result = handler(...args)
-      const handlerType = isAsyncFunction(handler) ? HandlerType.async : HandlerType.sync
-      this._setWatcher(handlerType, eventName, type, id, result, ...args)
+      const handlerAsync = isAsyncFunction(handler)
+      const handlerType = handlerAsync ? HandlerType.async : HandlerType.sync
+      if (handlerAsync) {
+        try {
+          handler(...args)
+            .then((result: any) => {
+              this.handledCount++
+              this._setWatcher(handlerType, eventName, type, id, result, ...args)
+            })
+            .catch((err: any) => {
+              this.handledCount++
+              this._setWatcher(handlerType, eventName, type, id, err, ...args)
+            })
+        } catch (err: any) {
+          this.handledCount++
+          this._setWatcher(
+            handlerType,
+            eventName,
+            type,
+            id,
+            {
+              errMessage: err.message
+            },
+            ...args
+          )
+          this.Debugger.error(err.message)
+        }
+      } else {
+        let result
+        try {
+          result = handler(...args)
+        } catch (err: any) {
+          result = {
+            errMessage: err.message
+          }
+          this.Debugger.error(err.message)
+        } finally {
+          this.handledCount++
+          this._setWatcher(handlerType, eventName, type, id, result, ...args)
+        }
+      }
     }
     return this
   }
 
-  /**
-   * @description 获取当前已注册的事件处理器函数的的执行快照
-   * @param {ModeType} [mode]
-   * @returns {*}
-   * @memberof EventEmitter
-   */
-  // watch(mode?: ModeType) {
-  //   const watchMode = (mode && mode === Mode.cool) || this.mode === Mode.cool ? Mode.cool : Mode.default
-  //   this._setWatchInteraval(watchMode)
-  // }
-
-  _setWatchInteraval(mode: ModeType) {
+  protected _setWatchInterval() {
+    if (!this.debug) return this
     clearInterval(this.watchIntervalId)
     this.watchIntervalId = setInterval(() => {
-      if (this.handlerdNumber === this.shouldHandlerNumber) {
-        // const coolWatcher = Object.create(null)
+      if (this.handledCount === this.shouldHandledCount) {
         const coolWatcher = []
         for (const [key, value] of this.eventEmitterWatcher) {
           for (const detail of value.details) {
@@ -233,16 +271,34 @@ class EventEmitter {
               tableDetail.args = JSON.stringify(tableDetail.args)
             }
             coolWatcher.push({
-              key,
+              handlerId: key,
               ...tableDetail
+            })
+            let lastIndex = 0
+            let lastTime = coolWatcher[0].time.getTime()
+            coolWatcher.forEach((symbol, index) => {
+              if (symbol.time.getTime() >= lastTime) {
+                lastTime = symbol.time.getTime()
+                lastIndex = index
+              }
+            })
+            coolWatcher.forEach((symbol, index) => {
+              if (index === lastIndex) {
+                symbol.newer = true
+              } else {
+                symbol.newer = false
+              }
             })
           }
         }
-        if (mode === Mode.cool) {
-          console.table(coolWatcher)
+        this.Debugger.clear()
+        if (this.snapshotMode === Mode.cool) {
+          this.Debugger._output("log", "", " Processor Snapshot Info")
+          this.Debugger.table(coolWatcher)
         } else {
-          console.log(this.eventEmitterWatcher)
+          this.Debugger._output("log", this.eventEmitterWatcher, " Processor Snapshot Info")
         }
+
         clearInterval(this.watchIntervalId)
       }
     }, 100)
@@ -255,8 +311,8 @@ class EventEmitter {
       this.Debugger.info(SuggestionTips.NO_HANDLER_TIP)
       return this
     }
-
-    this.shouldHandlerNumber += handlers.length
+    this._setWatchInterval()
+    this.shouldHandledCount += handlers.length
     for (const { handler, id, type, eventName } of handlers) {
       const handlerAsync = isAsyncFunction(handler)
       const handlerType = handlerAsync ? HandlerType.async : HandlerType.sync
@@ -264,14 +320,25 @@ class EventEmitter {
         try {
           handler(...args)
             .then((result: any) => {
-              this.handlerdNumber++
+              this.handledCount++
               this._setWatcher(handlerType, eventName, type, id, result, ...args)
             })
             .catch((err: any) => {
-              this.handlerdNumber++
+              this.handledCount++
               this._setWatcher(handlerType, eventName, type, id, err, ...args)
             })
         } catch (err: any) {
+          this.handledCount++
+          this._setWatcher(
+            handlerType,
+            eventName,
+            type,
+            id,
+            {
+              errMessage: err.message
+            },
+            ...args
+          )
           this.Debugger.error(err.message)
         }
       } else {
@@ -279,10 +346,12 @@ class EventEmitter {
         try {
           result = handler(...args)
         } catch (err: any) {
-          result = err
+          result = {
+            errMessage: err.message
+          }
           this.Debugger.error(err.message)
         } finally {
-          this.handlerdNumber++
+          this.handledCount++
           this._setWatcher(handlerType, eventName, type, id, result, ...args)
         }
       }
@@ -471,27 +540,6 @@ class EventEmitter {
       type = "global"
     }
     const eventUuid = `${eventName}-${type}-${id}`
-
-    // if (!this.coolEventEmitterWatcher[eventUuid]) {
-    //   this.coolEventEmitterWatcher[eventUuid] = {
-    //     count: 1,
-    //     details: [
-    //       {
-    //         result,
-    //         time: new Date(),
-    //         args,
-    //         handlerType
-    //       }
-    //     ]
-    //   }
-    // } else {
-    //   const applyCount = this.coolEventEmitterWatcher[eventUuid].count
-    //   const applyDetails = this.coolEventEmitterWatcher[eventUuid].details
-    //   this.coolEventEmitterWatcher[eventUuid] = {
-    //     count: applyCount + 2,
-    //     details: [...applyDetails, { result, time: new Date(), args, handlerType }]
-    //   }
-    // }
 
     if (!this.eventEmitterWatcher.has(eventUuid)) {
       this.eventEmitterWatcher.set(eventUuid, {

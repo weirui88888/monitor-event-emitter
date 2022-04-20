@@ -36,12 +36,12 @@ interface IMatchHandlers extends Pick<IEventValue, "id" | "type"> {
   eventName: string
 }
 
-interface IHandlerDetails {
+interface IHandlerDetails<T = any[]> {
   count: number
   details: {
     result: any
     time: Date
-    args: any[]
+    args: T
     handlerType: keyof typeof HandlerType
   }[]
 }
@@ -58,7 +58,8 @@ declare const enum SuggestionTips {
   OFF_METHOD_EVENT_TYPE_WARN = "event type should be string, such as 'download.pic' or 'download.pic pay' or 'download.pic pay.privilege'",
   OFFTYPE_METHOD_TYPE_WARN = "param type should be provided as string",
   REGISTER_EXCEEDED_WARN = "the number of events or handlers has exceeded the limit",
-  NO_HANDLER_TIP = "no handler function found based on your input"
+  NO_HANDLER_TIP = "no handler function found based on your input",
+  WATCH_MODE_WARN = 'param type should be provided as "cool" or "default"'
 }
 
 export {

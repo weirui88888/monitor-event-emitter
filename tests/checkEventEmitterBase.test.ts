@@ -118,31 +118,6 @@ test("not emit with a correct way", () => {
   expect(res).toBe(emitter)
 })
 
-test("emitter Watch", () => {
-  const emitter = new EventEmitter()
-  const handle1 = jest.fn().mockReturnValue("emitter Watch")
-  const handle2 = jest.fn().mockReturnValue("emitter Watch2")
-  emitter.on("download.sticker", handle1)
-  emitter.on("pay.font", handle2)
-  emitter.emitType("sticker", "provide")
-  emitter.emitType("font", "provide2")
-  emitter.emitType("font", "provide3")
-  const watcher = emitter.watch()
-  expect(watcher.size).toBe(2)
-  const watcherValues = [...watcher.values()]
-
-  expect(watcherValues[0].count).toBe(1)
-  expect(watcherValues[1].count).toBe(2)
-
-  expect(watcherValues[0].details[0].args[0]).toBe("provide")
-  expect(watcherValues[1].details[0].args[0]).toBe("provide2")
-  expect(watcherValues[1].details[1].args[0]).toBe("provide3")
-
-  expect(watcherValues[0].details[0].result).toBe("emitter Watch")
-  expect(watcherValues[1].details[0].result).toBe("emitter Watch2")
-  expect(watcherValues[1].details[1].result).toBe("emitter Watch2")
-})
-
 test("type error of emitType", () => {
   const emitter = new EventEmitter()
   const handle1 = jest.fn()
