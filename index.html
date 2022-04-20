@@ -9,47 +9,48 @@
   <body>
     <div id="app"></div>
   </body>
-  <script src="./lib/bundle.browser.js?t=3383091334141178332111421179"></script>
+  <script src="./lib/bundle.browser.js"></script>
   <script>
-    window.onload = function () {
-      const eventBus = new PrettyEventEmitter({
-        maxEvents: 3,
-        scope: "MY Test",
-        debug: true
+    const eventBus = new PrettyEventEmitter({
+      maxEvents: 3,
+      scope: "MY Test",
+      debug: true
+    })
+
+    eventBus.on("download", (status) => {
+      return status
+    })
+
+    eventBus.on("pay", async (random) => {
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          if (random > 0.5) {
+            resolve({
+              status: "success",
+              code: random
+            })
+          } else {
+            reject({
+              status: "fail",
+              code: random
+            })
+          }
+        }, 500)
       })
+    })
 
-      // eventBus.on("exchanged", (status) => {
-      //   return status
-      // })
-      eventBus.on("download.sticker", async (random) => {
-        return new Promise((resolve, reject) => {
-          setTimeout(() => {
-            if (random > 0.5) {
-              resolve({
-                status: "success",
-                code: random
-              })
-            } else {
-              reject({
-                status: "fail",
-                code: random
-              })
-            }
-          }, 1000)
-        })
-      })
+    eventBus.emit("download", 12)
 
-      // eventBus.emit("exchanged", true)
+    eventBus.emitType("pay", Math.random())
 
-      setTimeout(() => {
-        eventBus.emit("download.sticker", Math.random())
-      }, 2000)
+    setTimeout(() => {
+      eventBus.emit("pay", Math.random())
+    }, 2000)
 
-      // setTimeout(() => {
-      //   eventBus.emitType("sticker", Math.random())
-      // }, 5000)
+    setTimeout(() => {
+      eventBus.emit("pay", Math.random())
+    }, 4000)
 
-      document.getElementById("app").innerText = "hello world"
-    }
+    document.getElementById("app").innerText = "hello world"
   </script>
 </html>

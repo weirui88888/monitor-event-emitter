@@ -128,3 +128,15 @@ test("test emitType", (done) => {
 
   emitter.emitType("sticker")
 })
+test("no handlers with type input", () => {
+  const emitter = new EventEmitter({
+    mode: "cool",
+    debug: true
+  })
+
+  const handle1 = jest.fn()
+
+  emitter.on("pay", handle1)
+
+  expect(emitter.emitType("sticker")).toBe(emitter)
+})

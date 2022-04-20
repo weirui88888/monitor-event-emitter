@@ -105,7 +105,7 @@ class EventEmitter {
     }
     const handlers = this.events.get(event)
     if (!handlers) {
-      this.Debugger.info(`${SuggestionTips.NO_EVENT_HANDLER_TIP} ${event} is 0`)
+      this.Debugger.warn(`${SuggestionTips.NO_EVENT_HANDLER_TIP}[ ${event} ] is 0`)
       return 0
     }
     return handlers.length
@@ -164,7 +164,7 @@ class EventEmitter {
       return this
     }
     if (!this.events.size) {
-      this.Debugger.info(SuggestionTips.NO_EVENT_TIP)
+      this.Debugger.warn(SuggestionTips.NO_EVENT_TIP)
       return this
     }
     const events = event.split(" ")
@@ -206,6 +206,9 @@ class EventEmitter {
     }
     if (typeHandlers.length != 0) {
       this._setWatchInterval()
+    } else {
+      this.Debugger.warn(`${SuggestionTips.NO_TYPE_HANDLER_TIP}[ ${type} ]`)
+      return this
     }
     this.shouldHandledCount += typeHandlers.length
 
@@ -284,14 +287,14 @@ class EventEmitter {
             })
             coolWatcher.forEach((symbol, index) => {
               if (index === lastIndex) {
-                symbol.newer = true
+                symbol.lastHandled = true
               } else {
-                symbol.newer = false
+                symbol.lastHandled = false
               }
             })
           }
         }
-        this.Debugger.clear()
+        // this.Debugger.clear()
         if (this.snapshotMode === Mode.cool) {
           this.Debugger._output("log", "", " Processor Snapshot Info")
           this.Debugger.table(coolWatcher)
@@ -308,7 +311,7 @@ class EventEmitter {
     const [eventName, type = ""] = event.split(".")
     const handlers = this._matchHandlers(eventName, type)
     if (handlers.length === 0) {
-      this.Debugger.info(SuggestionTips.NO_HANDLER_TIP)
+      this.Debugger.warn(`${SuggestionTips.NO_HANDLER_TIP}[${event}]`)
       return this
     }
     this._setWatchInterval()
@@ -440,7 +443,7 @@ class EventEmitter {
     const hasOrder = isNumber(order) && (order as number) >= 0
     const [event, type = ""] = identifier.split(".")
     if (!event) {
-      this.Debugger.info(SuggestionTips.EVENT_WITH_TYPE_ONLY_TIP)
+      this.Debugger.warn(SuggestionTips.EVENT_WITH_TYPE_ONLY_TIP)
       return this
     }
 
