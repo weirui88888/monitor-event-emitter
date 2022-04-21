@@ -1,4 +1,4 @@
-# MonitorEventEmitter ![language-typescript](https://img.shields.io/badge/typescript-blue?style=flat&logo=typescript&logoColor=white) [![codecov](https://codecov.io/gh/weirui88888/monitor-event-emitter/branch/master/graph/badge.svg?token=AU474UU208)](https://codecov.io/gh/weirui88888/monitor-event-emitter) ![minified size](https://img.shields.io/badge/minified%20size-8kB-blue)
+# MonitorEventEmitter ![language-typescript](https://img.shields.io/badge/typescript-blue?style=flat&logo=typescript&logoColor=white) [![codecov](https://codecov.io/gh/weirui88888/monitor-event-emitter/branch/master/graph/badge.svg?token=AU474UU208)](https://codecov.io/gh/weirui88888/monitor-event-emitter) ![minified size](https://img.shields.io/badge/minified%20size-7.5kB-blue)
 
 [中文文档](./README-ZH.md)
 
@@ -10,7 +10,7 @@ By using it, you can easily register and trigger events. At the same time, you c
 
 ## Console real time snapshot information
 
-![renderings](./MonitorEventEmitter.gif)
+![renderings](./MonitorEventEmitter.png)
 
 ### Log description
 

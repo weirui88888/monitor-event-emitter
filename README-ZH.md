@@ -1,4 +1,4 @@
-# MonitorEventEmitter ![language-typescript](https://img.shields.io/badge/typescript-blue?style=flat&logo=typescript&logoColor=white) [![codecov](https://codecov.io/gh/weirui88888/monitor-event-emitter/branch/master/graph/badge.svg?token=AU474UU208)](https://codecov.io/gh/weirui88888/monitor-event-emitter) ![minified size](https://img.shields.io/badge/minified%20size-8kB-blue)
+# MonitorEventEmitter ![language-typescript](https://img.shields.io/badge/typescript-blue?style=flat&logo=typescript&logoColor=white) [![codecov](https://codecov.io/gh/weirui88888/monitor-event-emitter/branch/master/graph/badge.svg?token=AU474UU208)](https://codecov.io/gh/weirui88888/monitor-event-emitter) ![minified size](https://img.shields.io/badge/minified%20size-7.5kB-blue)
 
 [English Doc](./README.md)
 
@@ -10,7 +10,7 @@
 
 ## 控制台实时日志
 
-![renderings](./MonitorEventEmitter.gif)
+![renderings](./MonitorEventEmitter.png)
 
 ### 日志阐述
 
