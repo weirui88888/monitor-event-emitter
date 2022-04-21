@@ -1,6 +1,7 @@
 # MonitorEventEmitter ![language-typescript](https://img.shields.io/badge/typescript-blue?style=flat&logo=typescript&logoColor=white) [![codecov](https://codecov.io/gh/weirui88888/monitor-event-emitter/branch/master/graph/badge.svg?token=AU474UU208)](https://codecov.io/gh/weirui88888/monitor-event-emitter) ![minified size](https://img.shields.io/badge/minified%20size-7.5kB-blue)
 
 [中文文档](./README-ZH.md)
+[Demo](http://show.newarray.vip/monitor-event-emitter/index.html)
 
 ## Why
 
@@ -10,7 +11,7 @@ By using it, you can easily register and trigger events. At the same time, you c
 
 ## Console real time snapshot information
 
-![renderings](http://show.newarray.vip/pic/monitor-event-emitter.png)
+![renderings](http://show.newarray.vip/monitor-event-emitter/monitor-event-emitter.png)
 
 ### Log description
 
