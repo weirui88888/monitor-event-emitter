@@ -1,4 +1,4 @@
-# MonitorEventEmitter ![language-typescript](https://img.shields.io/badge/typescript-blue?style=flat&logo=typescript&logoColor=white) [![codecov](https://codecov.io/gh/weirui88888/monitor-event-emitter/branch/master/graph/badge.svg?token=AU474UU208)](https://codecov.io/gh/weirui88888/monitor-event-emitter)
+# MonitorEventEmitter ![language-typescript](https://img.shields.io/badge/typescript-blue?style=flat&logo=typescript&logoColor=white) [![codecov](https://codecov.io/gh/weirui88888/monitor-event-emitter/branch/master/graph/badge.svg?token=AU474UU208)](https://codecov.io/gh/weirui88888/monitor-event-emitter) ![minified size](https://img.shields.io/badge/minified%20size-8kB-blue)
 
 [中文文档](./README-ZH.md)
 
@@ -89,32 +89,32 @@ eventsBus.on('download.avatar download.image download.privilege pay.membership p
     {
       download: [
         {
-          type:'avatar',
-          handler:()=>{},
-          id:uuid
+          type: "avatar",
+          handler: () => {},
+          id: uuid
         },
         {
-          type:'image',
-          handler:()=>{},
-          id:uuid
+          type: "image",
+          handler: () => {},
+          id: uuid
         },
         {
-          type:'privilege',
-          handler:()=>{},
-          id:uuid
+          type: "privilege",
+          handler: () => {},
+          id: uuid
         }
       ],
       pay: [
         {
-          type:'membership',
-          handler:()=>{},
-          id:uuid
+          type: "membership",
+          handler: () => {},
+          id: uuid
         },
         {
-          type:'privilege',
-          handler:()=>{},
-          id:uuid
-        },
+          type: "privilege",
+          handler: () => {},
+          id: uuid
+        }
       ]
     }
     // you can call eventsBus.emitType('privilege')，thus executing 3, 5 simultaneously

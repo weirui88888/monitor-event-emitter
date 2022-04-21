@@ -1,4 +1,4 @@
-# MonitorEventEmitter ![language-typescript](https://img.shields.io/badge/typescript-blue?style=flat&logo=typescript&logoColor=white) [![codecov](https://codecov.io/gh/weirui88888/monitor-event-emitter/branch/master/graph/badge.svg?token=AU474UU208)](https://codecov.io/gh/weirui88888/monitor-event-emitter)
+# MonitorEventEmitter ![language-typescript](https://img.shields.io/badge/typescript-blue?style=flat&logo=typescript&logoColor=white) [![codecov](https://codecov.io/gh/weirui88888/monitor-event-emitter/branch/master/graph/badge.svg?token=AU474UU208)](https://codecov.io/gh/weirui88888/monitor-event-emitter) ![minified size](https://img.shields.io/badge/minified%20size-8kB-blue)
 
 [English Doc](./README.md)
 
@@ -89,32 +89,32 @@ eventsBus.on('download.avatar download.image download.privilege pay.membership p
     {
       download: [
         {
-          type:'avatar',
-          handler:()=>{}, // 1
-          id:uuid
+          type: "avatar",
+          handler: () => {},
+          id: uuid
         },
         {
-          type:'image',
-          handler:()=>{}, // 2
-          id:uuid
+          type: "image",
+          handler: () => {},
+          id: uuid
         },
         {
-          type:'privilege',
-          handler:()=>{}, // 3
-          id:uuid
+          type: "privilege",
+          handler: () => {},
+          id: uuid
         }
       ],
       pay: [
         {
-          type:'membership',
-          handler:()=>{}, // 4
-          id:uuid
+          type: "membership",
+          handler: () => {},
+          id: uuid
         },
         {
-          type:'privilege',
-          handler:()=>{}, // 5
-          id:uuid
-        },
+          type: "privilege",
+          handler: () => {},
+          id: uuid
+        }
       ]
     }
     // 你可以通过调用eventsBus.emitType('privilege')，从而同时执行3，5
