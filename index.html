@@ -11,7 +11,7 @@
   </body>
   <script src="./lib/bundle.browser.js"></script>
   <script>
-    const eventBus = new PrettyEventEmitter({
+    const eventBus = new MonitorEventEmitter({
       maxEvents: 3,
       scope: "MY Test",
       debug: true
@@ -39,7 +39,7 @@
       })
     })
 
-    eventBus.emit("download", 12)
+    eventBus.emit("download", 4399)
 
     eventBus.emitType("pay", Math.random())
 

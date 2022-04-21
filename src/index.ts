@@ -157,7 +157,6 @@ class EventEmitter {
    * @memberof EventEmitter
    */
   emit(event: string, ...args: any[]) {
-    clearInterval(this.watchIntervalId)
     const reg = /^[A-Za-z][A-Za-z.]+(\s{1}[A-Za-z.]+)*/g
     if (!reg.test(event)) {
       this.Debugger.warn(SuggestionTips.EMIT_METHOD_EVENT_TYPE_WARN)
@@ -187,7 +186,6 @@ class EventEmitter {
       this.Debugger.warn(SuggestionTips.TYPE_TYPE_WARN)
       return this
     }
-    clearInterval(this.watchIntervalId)
     let typeHandlers: IMatchHandlers[] = []
     for (const [eventName, handlers] of this.events.entries()) {
       const [typeHandler] = handlers.filter((handler) => handler.type === type) as IEventValue[]
@@ -212,7 +210,12 @@ class EventEmitter {
     }
     this.shouldHandledCount += typeHandlers.length
 
-    for (const { handler, id, type, eventName } of typeHandlers) {
+    this._callHandlers(typeHandlers, ...args)
+    return this
+  }
+
+  protected _callHandlers(handlers: IMatchHandlers[], ...args: any[]) {
+    for (const { handler, id, type, eventName } of handlers) {
       const handlerAsync = isAsyncFunction(handler)
       const handlerType = handlerAsync ? HandlerType.async : HandlerType.sync
       if (handlerAsync) {
@@ -255,7 +258,6 @@ class EventEmitter {
         }
       }
     }
-    return this
   }
 
   protected _setWatchInterval() {
@@ -301,7 +303,6 @@ class EventEmitter {
         } else {
           this.Debugger._output("log", this.eventEmitterWatcher, " Processor Snapshot Info")
         }
-
         clearInterval(this.watchIntervalId)
       }
     }, 100)
@@ -316,49 +317,7 @@ class EventEmitter {
     }
     this._setWatchInterval()
     this.shouldHandledCount += handlers.length
-    for (const { handler, id, type, eventName } of handlers) {
-      const handlerAsync = isAsyncFunction(handler)
-      const handlerType = handlerAsync ? HandlerType.async : HandlerType.sync
-      if (handlerAsync) {
-        try {
-          handler(...args)
-            .then((result: any) => {
-              this.handledCount++
-              this._setWatcher(handlerType, eventName, type, id, result, ...args)
-            })
-            .catch((err: any) => {
-              this.handledCount++
-              this._setWatcher(handlerType, eventName, type, id, err, ...args)
-            })
-        } catch (err: any) {
-          this.handledCount++
-          this._setWatcher(
-            handlerType,
-            eventName,
-            type,
-            id,
-            {
-              errMessage: err.message
-            },
-            ...args
-          )
-          this.Debugger.error(err.message)
-        }
-      } else {
-        let result
-        try {
-          result = handler(...args)
-        } catch (err: any) {
-          result = {
-            errMessage: err.message
-          }
-          this.Debugger.error(err.message)
-        } finally {
-          this.handledCount++
-          this._setWatcher(handlerType, eventName, type, id, result, ...args)
-        }
-      }
-    }
+    this._callHandlers(handlers, ...args)
   }
 
   /**

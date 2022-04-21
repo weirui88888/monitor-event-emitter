@@ -77,6 +77,7 @@ declare class EventEmitter {
      * @memberof EventEmitter
      */
     emitType(type: string, ...args: any[]): this;
+    protected _callHandlers(handlers: IMatchHandlers[], ...args: any[]): void;
     protected _setWatchInterval(): this | undefined;
     protected _emit(event: string, ...args: any[]): this | undefined;
     /**
