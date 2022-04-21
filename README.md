@@ -8,7 +8,23 @@ A lightweight event monitoring processor. Support `cmj`、`esm`、`umd` module
 
 By using it, you can easily register and trigger events. At the same time, you can observe the **snapshot information** of the event handler execution in real time in the **console**, so as to **locate the problems** of some complex scenarios
 
-Also,You can extend your business module with this base class, such as:
+## Console real time snapshot information
+
+![renderings](./MonitorEventEmitter.gif)
+
+### Log description
+
+| handlerId                   |         result          |      time      |           args            |         handlerType          |                    lastHandled                     |
+| --------------------------- | :---------------------: | :------------: | :-----------------------: | :--------------------------: | :------------------------------------------------: |
+| register function unique id | function returns result | execution time | function input parameters | function type, sync or async | true represents the last execution of the function |
+
+Through this information, I believe it will be helpful to your development.
+
+## Overview
+
+:tada: In order to reduce the cost of use, the library holds the principle of openness without any constraints. You can even instantiate without passing any parameters and it will still work just fine. But in order to better fit your expected goals, you can choose to make some necessary configurations.Please refer to the currently supported parameters [Config](#config)
+
+**Also,You can extend your business module with this base class, such as:**
 
 ```javascript
 import EventEmitter from "monitor-event-emitter"
@@ -19,12 +35,8 @@ class derivedClass extends MonitorEventEmitter {
   }
   ...your code
 }
-// By inheriting this way, your derived class has all the properties and methods of the base class
+// Through inheritance, your library will also have all its capabilities to help you work better.
 ```
-
-## Overview
-
-:tada: In order to reduce the cost of use, the library holds the principle of openness without any constraints. You can even instantiate without passing any parameters and it will still work just fine. But in order to better fit your expected goals, you can choose to make some necessary configurations.Please refer to the currently supported parameters [Config](#config)
 
 ## Install
 

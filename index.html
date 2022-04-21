@@ -13,7 +13,7 @@
   <script>
     const eventBus = new MonitorEventEmitter({
       maxEvents: 3,
-      scope: "MY Test",
+      scope: "MonitorEventEmitter",
       debug: true
     })
 
@@ -39,9 +39,9 @@
       })
     })
 
-    eventBus.emit("download", 4399)
-
-    eventBus.emitType("pay", Math.random())
+    setTimeout(() => {
+      eventBus.emit("download", 4399)
+    }, 1000)
 
     setTimeout(() => {
       eventBus.emit("pay", Math.random())
