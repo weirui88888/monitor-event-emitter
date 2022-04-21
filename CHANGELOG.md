@@ -14,7 +14,6 @@
     - on
     - emit
     - emitType
-    - watch
     - countOfEventHandlers
     - countOfTypeHandlers
     - off
