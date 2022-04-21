@@ -10,7 +10,7 @@
 
 ## 控制台实时日志
 
-![renderings](./MonitorEventEmitter.png)
+![renderings](http://show.newarray.vip/pic/monitor-event-emitter.png)
 
 ### 日志阐述
 

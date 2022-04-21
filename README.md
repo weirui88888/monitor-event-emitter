@@ -10,7 +10,7 @@ By using it, you can easily register and trigger events. At the same time, you c
 
 ## Console real time snapshot information
 
-![renderings](./MonitorEventEmitter.png)
+![renderings](http://show.newarray.vip/pic/monitor-event-emitter.png)
 
 ### Log description
 
