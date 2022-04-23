@@ -1,7 +1,7 @@
 {
   "name": "monitor-event-emitter",
   "version": "1.0.0",
-  "description": "A lightweight event monitoring processor",
+  "description": "A lightweight event monitoring processor. Support `cmj`、`esm`、`umd` module",
   "main": "lib/bundle.cjs.js",
   "module": "lib/bundle.esm.js",
   "browser": "lib/bundle.browser.js",

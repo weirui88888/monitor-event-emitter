@@ -300,7 +300,7 @@ eventsBus.countOfAllHandlers // 3
 - [x] Beautify console log information
 - [x] Support log simple mode（At present, the data type in it is implemented by map, which is very convenient to write, but may not be very comfortable to read）
 - [ ] Improve unit testing
-- [ ] Add console log rendering and explain its meaning
+- [x] Add console log rendering and explain its meaning
 
 ## Contributing
 
